@@ -705,15 +705,8 @@ local function randomNameString()
 	return table.concat(array)
 end
 
-local function EtherLibrary:Destroy()
+function EtherLibrary:Destroy()
 	if EtherLibrary.GlobalAutoSave == true then
-		pcall(function()
-			EtherExecutor:Toast({
-				Title = "Wait, Saved " .. windowData.ConfigName .. " for Window " .. i .. "...",
-				Icon = "cloud",
-				Time = 3
-			})
-		end)
 		task.wait(4)
 	end
 
@@ -1017,7 +1010,7 @@ local function Notification(NotificationConfig)
 	end)
 end
 
-local function EtherLibrary:Popup(config)
+local function Popup(config)
 	config = config or {}
 	config.Title = config.Title or "Confirmation"
 	config.Content = config.Content or "Are you sure you want to proceed?"
@@ -1292,7 +1285,7 @@ local DestroyBut = Create("TextButton", {
 	Active = true
 })
 
-DestroyBut.MouseButton1Click:Connect(function()
+SafeConnect(DestroyBut.MouseButton1Click, function()
   EtherLibrary:Destroy()
 end)
 
@@ -1367,7 +1360,7 @@ Create("UIListLayout", {
 	Parent = MainFrame
 })
 
-MinimizeBut.MouseButton1Click:Connect(function()
+SafeConnect(MinimizeBut.MouseButton1Click, function()
 	if tweening then return end
 	tweening = true
 

@@ -3799,46 +3799,49 @@ Create("UIGridLayout", {
 	Parent = PresetGrid,
 })
 
-for _, preset in ipairs(PRESETS) do
-	local pBtn = Create("TextButton", {
-		BackgroundColor3 = Color3.fromRGB(22, 22, 28),
-		Text = preset.name, Font = Enum.Font.GothamBold, TextSize = 10,
-		TextColor3 = Color3.fromRGB(255, 255, 255), AutoButtonColor = false,
-		Parent = PresetGrid,
-	})
-	Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = pBtn })
-	local pStroke = Create("UIStroke", {
-		Parent = pBtn, Thickness = 2, Color = preset.c1,
-		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-	})
-	if preset.gradient then
-		Create("UIGradient", {
-			Parent = pStroke, Rotation = preset.rot,
-			Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, preset.c1),
-				ColorSequenceKeypoint.new(1, preset.c2),
-			}),
+local function buildPresetButtons()
+	for _, preset in ipairs(PRESETS) do
+		local pBtn = Create("TextButton", {
+			BackgroundColor3 = Color3.fromRGB(22, 22, 28),
+			Text = preset.name, Font = Enum.Font.GothamBold, TextSize = 10,
+			TextColor3 = Color3.fromRGB(255, 255, 255), AutoButtonColor = false,
+			Parent = PresetGrid,
 		})
+		Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = pBtn })
+		local pStroke = Create("UIStroke", {
+			Parent = pBtn, Thickness = 2, Color = preset.c1,
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		})
+		if preset.gradient then
+			Create("UIGradient", {
+				Parent = pStroke, Rotation = preset.rot,
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, preset.c1),
+					ColorSequenceKeypoint.new(1, preset.c2),
+				}),
+			})
+		end
+		pBtn.MouseButton1Click:Connect(function()
+			local cfg = EtherLibrary.ToggleButtonConfig
+			cfg.StrokeColor = preset.c1
+			cfg.StrokeColor2 = preset.c2
+			cfg.Gradient = preset.gradient
+			cfg.GradientRotation = preset.rot
+			cfg.RGBMode = preset.rgb
+			cfg.AutoRotate = false
+			RGBModeBtn.Text = preset.rgb and "ON" or "OFF"
+			RGBModeBtn.BackgroundColor3 = preset.rgb and Color3.fromRGB(40, 180, 80) or Color3.fromRGB(50, 50, 60)
+			AutoRotateBtn.Text = "OFF"
+			AutoRotateBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+			RotationInput.Text = tostring(preset.rot)
+			applyToggleVisuals()
+			refreshStrokeModeButtons()
+			saveToggleConfig()
+			hub:Toast("Preset: " .. preset.name, EtherExecutor)
+		end)
 	end
-	pBtn.MouseButton1Click:Connect(function()
-		local cfg = EtherLibrary.ToggleButtonConfig
-		cfg.StrokeColor = preset.c1
-		cfg.StrokeColor2 = preset.c2
-		cfg.Gradient = preset.gradient
-		cfg.GradientRotation = preset.rot
-		cfg.RGBMode = preset.rgb
-		cfg.AutoRotate = false
-		RGBModeBtn.Text = preset.rgb and "ON" or "OFF"
-		RGBModeBtn.BackgroundColor3 = preset.rgb and Color3.fromRGB(40, 180, 80) or Color3.fromRGB(50, 50, 60)
-		AutoRotateBtn.Text = "OFF"
-		AutoRotateBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-		RotationInput.Text = tostring(preset.rot)
-		applyToggleVisuals()
-		refreshStrokeModeButtons()
-		saveToggleConfig()
-		hub:Toast("Preset: " .. preset.name, EtherExecutor)
-	end)
 end
+buildPresetButtons()
 
 -- === Animation Section ===
 local AnimationSection = Create("Frame", {

@@ -3958,8 +3958,6 @@ end)
 
 ResetBtn.MouseButton1Click:Connect(function()
 	EtherLibrary.CustomIcon = "lucide:eye"
-	ResetBtn.MouseButton1Click:Connect(function()
-	EtherLibrary.CustomIcon = "lucide:eye"
 	EtherLibrary.ToggleButtonConfig = {
 		StrokeColor = Color3.fromRGB(0, 168, 255),
 		StrokeColor2 = Color3.fromRGB(255, 105, 180),

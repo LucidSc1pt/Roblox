@@ -44,17 +44,35 @@ local function setNavEnabled()
 	PageLbl.Text = hub.pagination.current .. " / " .. hub.pagination.total
 end
 
+-- ============================================================
+-- UPGRADED READ ONLY POPUP
+-- ============================================================
 local function createReadOnlyPopup(data)
 	local overlay = Ether.Create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0.4, ZIndex = 100, Parent = EtherExecutor })
-	local popup = Ether.Create("Frame", { Size = UDim2.new(0, 600, 0, 400), Position = UDim2.new(0.5, -300, 0.5, -200), BackgroundColor3 = Color3.fromRGB(20, 20, 25), ZIndex = 101, Parent = overlay })
+	local popup = Ether.Create("Frame", { Size = UDim2.new(0, 600, 0, 460), Position = UDim2.new(0.5, -300, 0.5, -230), BackgroundColor3 = Color3.fromRGB(20, 20, 25), ZIndex = 101, Parent = overlay })
 	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = popup })
-	Ether.Create("TextLabel", { Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 10, 0, 5), BackgroundTransparency = 1, Text = data.title or "Script", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 102, Parent = popup })
-	local scroll = Ether.Create("ScrollingFrame", { Size = UDim2.new(1, -20, 1, -80), Position = UDim2.new(0, 10, 0, 40), BackgroundColor3 = Color3.fromRGB(10, 10, 12), AutomaticCanvasSize = Enum.AutomaticSize.XY, ScrollBarThickness = 2, ZIndex = 102, Parent = popup })
-	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = scroll })
+	Ether.Create("UIStroke", { Color = Color3.fromRGB(60, 60, 70), Thickness = 1, Parent = popup })
+
+	-- HEADER INFO
+	local HeaderFrame = Ether.Create("Frame", { Size = UDim2.new(1, -20, 0, 70), Position = UDim2.new(0, 10, 0, 10), BackgroundTransparency = 1, Parent = popup })
+	Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 0, 24), BackgroundTransparency = 1, Text = data.title or "Script", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 16, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, ZIndex = 102, Parent = HeaderFrame })
+	Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, 26), BackgroundTransparency = 1, Text = "By: " .. (data.author or "Unknown") .. " | Game: " .. (data.gameName or "Universal"), TextColor3 = Color3.fromRGB(150, 200, 255), Font = Enum.Font.GothamSemibold, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 102, Parent = HeaderFrame })
+	Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, 44), BackgroundTransparency = 1, Text = "Source: " .. (data.source or "Unknown") .. " | Views: " .. tostring(data.views or 0) .. " | Likes: " .. tostring(data.likes or 0), TextColor3 = Color3.fromRGB(180, 180, 180), Font = Enum.Font.Gotham, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 102, Parent = HeaderFrame })
+
+	-- DESCRIPTION
+	local DescFrame = Ether.Create("Frame", { Size = UDim2.new(1, -20, 0, 40), Position = UDim2.new(0, 10, 0, 85), BackgroundColor3 = Color3.fromRGB(30, 30, 36), ZIndex = 102, Parent = popup })
+	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = DescFrame })
+	Ether.Create("UIPadding", { PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 4), PaddingBottom = UDim.new(0, 4), Parent = DescFrame })
+	Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = data.description or "No description provided.", TextColor3 = Color3.fromRGB(200, 200, 200), Font = Enum.Font.Gotham, TextSize = 11, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, TextTruncate = Enum.TextTruncate.AtEnd, ZIndex = 103, Parent = DescFrame })
+
+	-- CODE AREA
+	local CodeScroll = Ether.Create("ScrollingFrame", { Size = UDim2.new(1, -20, 1, -205), Position = UDim2.new(0, 10, 0, 130), BackgroundColor3 = Color3.fromRGB(10, 10, 12), AutomaticCanvasSize = Enum.AutomaticSize.XY, ScrollBarThickness = 4, ZIndex = 102, Parent = popup })
+	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = CodeScroll })
 	
-	local cont = Ether.Create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Parent = scroll })
+	local cont = Ether.Create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Parent = CodeScroll })
+	
 	local function renderCode(codeStr)
-		codeStr = codeStr or "-- Failed to fetch"
+		codeStr = codeStr or "-- Failed to fetch code"
 		local layers = Ether.highlighter.buildLayers(codeStr)
 		for _, c in ipairs(cont:GetChildren()) do if c:IsA("TextLabel") then c:Destroy() end end
 		for _, name in ipairs({"Numbers","Operators","Keywords","Globals","Executor","Types","Strings","Comments","Properties","Methods"}) do
@@ -62,64 +80,76 @@ local function createReadOnlyPopup(data)
 		end
 		task.spawn(function()
 			local b = game:GetService("TextService"):GetTextSize(codeStr, 12, Enum.Font.Code, Vector2.new(10000, 10000))
-			scroll.CanvasSize = UDim2.new(0, b.X, 0, b.Y)
+			CodeScroll.CanvasSize = UDim2.new(0, b.X, 0, b.Y)
 			cont.Size = UDim2.new(0, b.X, 0, b.Y)
 		end)
 		data.fetchedCode = codeStr
 	end
 
 	if data.isUrl and data.rawUrl ~= "" then
-		renderCode("-- Loading from RScripts...\n-- URL: "..data.rawUrl)
+		renderCode("-- Loading from " .. data.source .. "...\n-- URL: " .. data.rawUrl)
 		task.spawn(function()
 			local ok, body = Ether.universalHttpGet(data.rawUrl)
 			if ok and body ~= "" then renderCode(body)
-			else renderCode("-- Failed to fetch from RScripts\n-- URL: "..data.rawUrl.."\n-- Try game:HttpGet manually:\n-- game:HttpGet('"..data.rawUrl.."')") end
+			else renderCode("-- Failed to fetch from " .. data.source .. "\n-- URL: " .. data.rawUrl) end
 		end)
 	else
 		renderCode(data.scriptCode)
 	end
 
-	local execBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 90, 0, 30), Position = UDim2.new(1, -280, 1, -35), BackgroundColor3 = Color3.fromRGB(40, 180, 80), Text = "Execute", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 11, AutoButtonColor = false, ZIndex = 105, Parent = popup })
-	local saveBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 80, 0, 30), Position = UDim2.new(1, -180, 1, -35), BackgroundColor3 = Color3.fromRGB(255, 165, 0), Text = "Save", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 11, AutoButtonColor = false, ZIndex = 105, Parent = popup })
-	local loadBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 80, 0, 30), Position = UDim2.new(1, -90, 1, -35), BackgroundColor3 = Color3.fromRGB(30, 144, 255), Text = "To Editor", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 11, AutoButtonColor = false, ZIndex = 105, Parent = popup })
+	-- BUTTONS
+	local execBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 100, 0, 32), Position = UDim2.new(1, -330, 1, -45), BackgroundColor3 = Color3.fromRGB(40, 180, 80), Text = "Execute", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 12, AutoButtonColor = false, ZIndex = 105, Parent = popup })
+	local saveBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 100, 0, 32), Position = UDim2.new(1, -220, 1, -45), BackgroundColor3 = Color3.fromRGB(255, 165, 0), Text = "Save", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 12, AutoButtonColor = false, ZIndex = 105, Parent = popup })
+	local loadBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 100, 0, 32), Position = UDim2.new(1, -110, 1, -45), BackgroundColor3 = Color3.fromRGB(30, 144, 255), Text = "To Editor", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 12, AutoButtonColor = false, ZIndex = 105, Parent = popup })
 	for _, b in ipairs({ execBtn, saveBtn, loadBtn }) do Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = b }) end
-	local closeBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -35, 0, 5), BackgroundTransparency = 1, Text = "×", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 18, ZIndex = 106, Parent = popup })
+	local closeBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -35, 0, 10), BackgroundTransparency = 1, Text = "×", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 20, ZIndex = 106, Parent = popup })
 
 	closeBtn.MouseButton1Click:Connect(function() overlay:Destroy() end)
+	
 	execBtn.MouseButton1Click:Connect(function()
 		local codeToRun = data.fetchedCode or data.scriptCode
 		if data.isUrl and (not codeToRun or codeToRun:sub(1, 2) == "--") then
 			local ok, body = Ether.universalHttpGet(data.rawUrl)
 			if ok then codeToRun = body end
 		end
-		Ether.executeSource(codeToRun, "=HubScript")
+		if codeToRun and codeToRun:sub(1,2) ~= "--" then Ether.executeSource(codeToRun, "=HubScript")
+		else Ether.hub:Toast("Failed to load code", Ether.EtherExecutor) end
 		overlay:Destroy()
 	end)
+	
 	saveBtn.MouseButton1Click:Connect(function()
 		local codeToSave = data.fetchedCode or data.scriptCode
 		if data.isUrl and (not codeToSave or codeToSave:sub(1, 2) == "--") then
 			local ok, body = Ether.universalHttpGet(data.rawUrl)
 			if ok then codeToSave = body end
 		end
-		local ok, path = hub:SaveAsFile({ title = data.title, scriptCode = codeToSave, source = data.source }, "lua")
-		if ok then
-			hub:Toast("Saved: " .. (path:match("([^/\\]+)$") or "?"), EtherExecutor)
-			if _G.refreshSavedFn then _G.refreshSavedFn() end
-		else hub:Toast("Failed save", EtherExecutor) end
+		if codeToSave and codeToSave:sub(1,2) ~= "--" then
+			local ok, path = hub:SaveAsFile({ title = data.title, scriptCode = codeToSave, source = data.source }, "lua")
+			if ok then
+				hub:Toast("Saved: " .. (path:match("([^/\\]+)$") or "?"), EtherExecutor)
+				if _G.refreshSavedFn then _G.refreshSavedFn() end
+			else hub:Toast("Failed save", EtherExecutor) end
+		else Ether.hub:Toast("Failed to load code", Ether.EtherExecutor) end
 		overlay:Destroy()
 	end)
+	
 	loadBtn.MouseButton1Click:Connect(function()
 		local codeToAdd = data.fetchedCode or data.scriptCode
 		if data.isUrl and (not codeToAdd or codeToAdd:sub(1, 2) == "--") then
 			local ok, body = Ether.universalHttpGet(data.rawUrl)
 			if ok then codeToAdd = body end
 		end
-		Ether.tabEditor:AddTab(data.title, codeToAdd)
-		Ether.exeTabs.CodeTab:Select()
+		if codeToAdd and codeToAdd:sub(1,2) ~= "--" then
+			Ether.tabEditor:AddTab(data.title, codeToAdd)
+			Ether.exeTabs.CodeTab:Select()
+		else Ether.hub:Toast("Failed to load code", Ether.EtherExecutor) end
 		overlay:Destroy()
 	end)
 end
 
+-- ============================================================
+-- RENDER & SEARCH LOGIC
+-- ============================================================
 local function renderCurrentPage()
 	local list = hub.currentPageScripts
 	if hub.filterMode == "Views" then table.sort(list, function(a, b) return (a.views or 0) > (b.views or 0) end)
@@ -138,7 +168,9 @@ local function renderCurrentPage()
 		local remoteImageUrl
 		if data.source == "ScriptBlox" then remoteImageUrl = Ether.resolveScriptBloxImage(raw)
 		elseif data.source == "RScripts" then remoteImageUrl = Ether.resolveRScriptsImage(raw)
+		elseif data.source == "HaxHell" then remoteImageUrl = Ether.resolveHaxHellImage(raw)
 		else remoteImageUrl = Ether.resolveRobloxScriptsImage(raw) end
+		
 		local sourceUrl = remoteImageUrl
 		if not sourceUrl and data.gameId then sourceUrl = Ether.buildRobloxThumbnail(data.gameId) end
 
@@ -180,9 +212,15 @@ EngineBtn.MouseButton1Click:Connect(function()
 	local idx = Ether.table_find(hub.engines, hub.currentEngine) or 1
 	hub.currentEngine = hub.engines[idx % #hub.engines + 1]
 	EngineBtn.Text = "Engine: " .. hub.currentEngine
-	if hub.currentEngine == "RScripts" then SearchBox.PlaceholderText = "Search rscripts.net..." EngineBtn.BackgroundColor3 = Color3.fromRGB(45, 49, 58)
-	elseif hub.currentEngine == "RobloxScripts" then SearchBox.PlaceholderText = "Search robloxscripts.com..." EngineBtn.BackgroundColor3 = Color3.fromRGB(38, 52, 68)
-	else SearchBox.PlaceholderText = "Search scriptblox.com..." EngineBtn.BackgroundColor3 = Color3.fromRGB(30, 40, 50) end
+	if hub.currentEngine == "RScripts" then
+		SearchBox.PlaceholderText = "Search rscripts.net..." EngineBtn.BackgroundColor3 = Color3.fromRGB(45, 49, 58)
+	elseif hub.currentEngine == "RobloxScripts" then
+		SearchBox.PlaceholderText = "Search robloxscripts.com..." EngineBtn.BackgroundColor3 = Color3.fromRGB(38, 52, 68)
+	elseif hub.currentEngine == "HaxHell" then
+		SearchBox.PlaceholderText = "Search haxhell.com..." EngineBtn.BackgroundColor3 = Color3.fromRGB(60, 30, 60)
+	else
+		SearchBox.PlaceholderText = "Search scriptblox.com..." EngineBtn.BackgroundColor3 = Color3.fromRGB(30, 40, 50)
+	end
 end)
 
 FilterBtn.MouseButton1Click:Connect(function()

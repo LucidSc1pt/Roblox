@@ -154,7 +154,7 @@ local PRESETS = {
 }
 
 local PresetGrid = Ether.Create("Frame", { Size = UDim2.new(1, 0, 1, -30), Position = UDim2.new(0, 0, 0, 28), BackgroundTransparency = 1, Parent = PresetsSection })
-Ether.Create("UIGridLayout", { CellSize = UDim2.new(0, 95, 0, 32), CellPadding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = PresetGrid })
+Ether.Create("UIGridLayout", { CellSize = UDim2.new(0, 95, 0, 32), CellPadding = UDim2.new(0, 6, 0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = PresetGrid })
 
 for _, preset in ipairs(PRESETS) do
 	local pBtn = Ether.Create("TextButton", { BackgroundColor3 = Color3.fromRGB(22, 22, 28), Text = preset.name, Font = Enum.Font.GothamBold, TextSize = 10, TextColor3 = Color3.fromRGB(255, 255, 255), AutoButtonColor = false, Parent = PresetGrid })

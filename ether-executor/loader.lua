@@ -62,11 +62,10 @@ LoadModule("core/utils")
 LoadModule("core/highlighter")
 LoadModule("core/ui_components")
 LoadModule("core/tab_reuse")
+LoadModule("core/window")
 
-print("[Ether] Core modules berhasil di-load!")
-
--- (Nanti kita tambah module lain di sini)
--- LoadModule("core/highlighter")
--- LoadModule("tabs/editor")
+LoadModule("tabs/editor")
+LoadModule("tabs/info")
+print("[Ether] Tahap 3 berhasil di-load!")
 
 print("[Ether] Core modules berhasil di-load!")

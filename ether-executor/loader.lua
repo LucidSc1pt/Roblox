@@ -2,7 +2,7 @@
 -- ║  ETHER EXECUTOR LOADER (v2 Modular + Cache + Safe pcall)     ║
 -- ╚══════════════════════════════════════════════════════════════╝
 
-local BASE_URL = "https://raw.githubusercontent.com/LucidSc1pt/Roblox/main/ether-executor/"
+local BASE_URL = "https://raw.githubusercontent.com/LucidSc1pt/Roblox/refs/heads/main/ether-executor/src/"
 local CACHE_DIR = "EtherExecutor_Modules"
 
 -- Buat folder cache
@@ -54,7 +54,7 @@ local function LoadModule(modulePath)
 end
 
 -- Ambil file version.txt dari GitHub
-local ok, latestVer = pcall(game.HttpGet, game, "https://raw.githubusercontent.com/USERNAME/REPO/main/version.txt")
+local ok, latestVer = pcall(game.HttpGet, game, "https://raw.githubusercontent.com/LucidSc1pt/Roblox/refs/heads/main/ether-executor/version.txt")
 if ok and latestVer then
     -- Kalau ada update, hapus cache lama biar download versi baru
     if writefile and isfolder and delfile then

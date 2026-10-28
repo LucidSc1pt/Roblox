@@ -58,6 +58,12 @@ print("[Ether] Memulai loading modular...")
 LoadModule("core/init")
 LoadModule("core/services")
 LoadModule("core/ui_helper")
+LoadModule("core/utils")
+LoadModule("core/highlighter")
+LoadModule("core/ui_components")
+LoadModule("core/tab_reuse")
+
+print("[Ether] Core modules berhasil di-load!")
 
 -- (Nanti kita tambah module lain di sini)
 -- LoadModule("core/highlighter")

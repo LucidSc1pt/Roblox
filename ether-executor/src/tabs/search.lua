@@ -45,43 +45,86 @@ local function setNavEnabled()
 end
 
 -- ============================================================
--- UPGRADED READ ONLY POPUP
+-- UPGRADED READ ONLY POPUP (Scrollable + Image + Smaller Text)
 -- ============================================================
 local function createReadOnlyPopup(data)
+	-- Ukuran popup dikecilkan dari 600x460 menjadi 520x400
 	local overlay = Ether.Create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0.4, ZIndex = 100, Parent = EtherExecutor })
-	local popup = Ether.Create("Frame", { Size = UDim2.new(0, 600, 0, 460), Position = UDim2.new(0.5, -300, 0.5, -230), BackgroundColor3 = Color3.fromRGB(20, 20, 25), ZIndex = 101, Parent = overlay })
+	local popup = Ether.Create("Frame", { Size = UDim2.new(0, 520, 0, 400), Position = UDim2.new(0.5, -260, 0.5, -200), BackgroundColor3 = Color3.fromRGB(20, 20, 25), ZIndex = 101, Parent = overlay })
 	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = popup })
 	Ether.Create("UIStroke", { Color = Color3.fromRGB(60, 60, 70), Thickness = 1, Parent = popup })
 
-	-- HEADER INFO
-	local HeaderFrame = Ether.Create("Frame", { Size = UDim2.new(1, -20, 0, 70), Position = UDim2.new(0, 10, 0, 10), BackgroundTransparency = 1, Parent = popup })
-	Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 0, 24), BackgroundTransparency = 1, Text = data.title or "Script", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 16, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, ZIndex = 102, Parent = HeaderFrame })
-	Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, 26), BackgroundTransparency = 1, Text = "By: " .. (data.author or "Unknown") .. " | Game: " .. (data.gameName or "Universal"), TextColor3 = Color3.fromRGB(150, 200, 255), Font = Enum.Font.GothamSemibold, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 102, Parent = HeaderFrame })
-	Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, 44), BackgroundTransparency = 1, Text = "Source: " .. (data.source or "Unknown") .. " | Views: " .. tostring(data.views or 0) .. " | Likes: " .. tostring(data.likes or 0), TextColor3 = Color3.fromRGB(180, 180, 180), Font = Enum.Font.Gotham, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 102, Parent = HeaderFrame })
+	-- AREA SCROLL UTAMA (Mencakup semua konten di dalamnya)
+	local MainScroll = Ether.Create("ScrollingFrame", { 
+		Size = UDim2.new(1, -20, 1, -70), -- Sisakan ruang 70px di bawah untuk tombol
+		Position = UDim2.new(0, 10, 0, 10), 
+		BackgroundTransparency = 1, 
+		AutomaticCanvasSize = Enum.AutomaticSize.Y, 
+		ScrollBarThickness = 4, 
+		CanvasSize = UDim2.new(0,0,0,0),
+		ZIndex = 102, 
+		Parent = popup 
+	})
+	Ether.Create("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 12), SortOrder = Enum.SortOrder.LayoutOrder, Parent = MainScroll })
 
-	-- DESCRIPTION
-	local DescFrame = Ether.Create("Frame", { Size = UDim2.new(1, -20, 0, 40), Position = UDim2.new(0, 10, 0, 85), BackgroundColor3 = Color3.fromRGB(30, 30, 36), ZIndex = 102, Parent = popup })
-	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = DescFrame })
-	Ether.Create("UIPadding", { PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 4), PaddingBottom = UDim.new(0, 4), Parent = DescFrame })
-	Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = data.description or "No description provided.", TextColor3 = Color3.fromRGB(200, 200, 200), Font = Enum.Font.Gotham, TextSize = 11, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, TextTruncate = Enum.TextTruncate.AtEnd, ZIndex = 103, Parent = DescFrame })
-
-	-- CODE AREA
-	local CodeScroll = Ether.Create("ScrollingFrame", { Size = UDim2.new(1, -20, 1, -205), Position = UDim2.new(0, 10, 0, 130), BackgroundColor3 = Color3.fromRGB(10, 10, 12), AutomaticCanvasSize = Enum.AutomaticSize.XY, ScrollBarThickness = 4, ZIndex = 102, Parent = popup })
-	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = CodeScroll })
+	-- 1. BAGIAN ATAS: Image & Info Text
+	local TopInfoFrame = Ether.Create("Frame", { Size = UDim2.new(1, 0, 0, 80), BackgroundTransparency = 1, LayoutOrder = 1, Parent = MainScroll })
 	
-	local cont = Ether.Create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Parent = CodeScroll })
+	local ImgFrame = Ether.Create("Frame", { Size = UDim2.new(0, 120, 0, 70), BackgroundColor3 = Color3.fromRGB(25, 25, 25), Parent = TopInfoFrame })
+	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ImgFrame })
+	local ThumbImg = Ether.Create("ImageLabel", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Image = "", ImageTransparency = 1, Parent = ImgFrame })
+	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ThumbImg })
+
+	-- Ambil Gambar
+	local raw = data._raw or {}
+	local remoteImageUrl
+	if data.source == "ScriptBlox" then remoteImageUrl = Ether.resolveScriptBloxImage(raw)
+	elseif data.source == "RScripts" then remoteImageUrl = Ether.resolveRScriptsImage(raw)
+	elseif data.source == "HaxHell" then remoteImageUrl = Ether.resolveHaxHellImage(raw)
+	else remoteImageUrl = Ether.resolveRobloxScriptsImage(raw) end
+	local sourceUrl = remoteImageUrl or (data.gameId and Ether.buildRobloxThumbnail(data.gameId))
+	
+	if sourceUrl then
+		task.spawn(function()
+			local custom = Ether.downloadImageAsset(sourceUrl)
+			if custom then ThumbImg.Image = custom ThumbImg.ImageTransparency = 0
+			elseif data.gameId then Ether.tryFetchPlaceIcon(data.gameId, ThumbImg) end
+		end)
+	elseif data.gameId then
+		Ether.tryFetchPlaceIcon(data.gameId, ThumbImg)
+	end
+
+	-- Judul & Stats
+	Ether.Create("TextLabel", { Size = UDim2.new(1, -130, 0, 24), Position = UDim2.new(0, 130, 0, 0), BackgroundTransparency = 1, Text = data.title or "Script", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 15, TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = true, Parent = TopInfoFrame })
+	Ether.Create("TextLabel", { Size = UDim2.new(1, -130, 0, 16), Position = UDim2.new(0, 130, 0, 28), BackgroundTransparency = 1, Text = "By: " .. (data.author or "Unknown") .. " | " .. (data.source or "Unknown"), TextColor3 = Color3.fromRGB(150, 200, 255), Font = Enum.Font.GothamSemibold, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, Parent = TopInfoFrame })
+	Ether.Create("TextLabel", { Size = UDim2.new(1, -130, 0, 16), Position = UDim2.new(0, 130, 0, 46), BackgroundTransparency = 1, Text = "Views: " .. tostring(data.views or 0) .. " | Likes: " .. tostring(data.likes or 0), TextColor3 = Color3.fromRGB(180, 180, 180), Font = Enum.Font.Gotham, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, Parent = TopInfoFrame })
+
+	-- 2. BAGIAN TENGAH: Deskripsi
+	local DescFrame = Ether.Create("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundColor3 = Color3.fromRGB(30, 30, 36), LayoutOrder = 2, Parent = MainScroll })
+	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = DescFrame })
+	Ether.Create("UIPadding", { PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8), Parent = DescFrame })
+	Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Text = data.description or "No description provided.", TextColor3 = Color3.fromRGB(200, 200, 200), Font = Enum.Font.Gotham, TextSize = 11, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, Parent = DescFrame })
+
+	-- 3. BAGIAN BAWAH: Code Box (Scrollbar Dihilangkan karena udah di-scroll sama MainScroll)
+	local CodeFrame = Ether.Create("Frame", { Size = UDim2.new(1, 0, 0, 0), BackgroundColor3 = Color3.fromRGB(10, 10, 12), LayoutOrder = 3, Parent = MainScroll })
+	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = CodeFrame })
+	local cont = Ether.Create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Parent = CodeFrame })
 	
 	local function renderCode(codeStr)
 		codeStr = codeStr or "-- Failed to fetch code"
 		local layers = Ether.highlighter.buildLayers(codeStr)
 		for _, c in ipairs(cont:GetChildren()) do if c:IsA("TextLabel") then c:Destroy() end end
+		
+		-- Label script diperkecil dari TextSize 12 jadi 11
 		for _, name in ipairs({"Numbers","Operators","Keywords","Globals","Executor","Types","Strings","Comments","Properties","Methods"}) do
-			Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, Font = Enum.Font.Code, TextSize = 12, TextColor3 = Ether.highlighter.COLORS[name], Text = layers[name] or "", ZIndex = 103, Parent = cont })
+			Ether.Create("TextLabel", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, Font = Enum.Font.Code, TextSize = 11, TextColor3 = Ether.highlighter.COLORS[name], Text = layers[name] or "", Parent = cont })
 		end
+		
 		task.spawn(function()
-			local b = game:GetService("TextService"):GetTextSize(codeStr, 12, Enum.Font.Code, Vector2.new(10000, 10000))
-			CodeScroll.CanvasSize = UDim2.new(0, b.X, 0, b.Y)
-			cont.Size = UDim2.new(0, b.X, 0, b.Y)
+			-- Hitung ukuran teks buat nyesuaiin tinggi CodeFrame
+			local b = game:GetService("TextService"):GetTextSize(codeStr, 11, Enum.Font.Code, Vector2.new(10000, 10000))
+			CodeFrame.Size = UDim2.new(1, 0, 0, b.Y + 20) -- +20 buat padding
+			cont.Size = UDim2.new(1, 0, 1, 0)
 		end)
 		data.fetchedCode = codeStr
 	end
@@ -97,7 +140,7 @@ local function createReadOnlyPopup(data)
 		renderCode(data.scriptCode)
 	end
 
-	-- BUTTONS
+	-- TOMBOL DI BAGIAN BAWAH POPUP (Fixed, tidak ikut scroll)
 	local execBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 100, 0, 32), Position = UDim2.new(1, -330, 1, -45), BackgroundColor3 = Color3.fromRGB(40, 180, 80), Text = "Execute", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 12, AutoButtonColor = false, ZIndex = 105, Parent = popup })
 	local saveBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 100, 0, 32), Position = UDim2.new(1, -220, 1, -45), BackgroundColor3 = Color3.fromRGB(255, 165, 0), Text = "Save", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 12, AutoButtonColor = false, ZIndex = 105, Parent = popup })
 	local loadBtn = Ether.Create("TextButton", { Size = UDim2.new(0, 100, 0, 32), Position = UDim2.new(1, -110, 1, -45), BackgroundColor3 = Color3.fromRGB(30, 144, 255), Text = "To Editor", TextColor3 = Color3.fromRGB(255, 255, 255), Font = Enum.Font.GothamBold, TextSize = 12, AutoButtonColor = false, ZIndex = 105, Parent = popup })
@@ -108,10 +151,7 @@ local function createReadOnlyPopup(data)
 	
 	execBtn.MouseButton1Click:Connect(function()
 		local codeToRun = data.fetchedCode or data.scriptCode
-		if data.isUrl and (not codeToRun or codeToRun:sub(1, 2) == "--") then
-			local ok, body = Ether.universalHttpGet(data.rawUrl)
-			if ok then codeToRun = body end
-		end
+		if data.isUrl and (not codeToRun or codeToRun:sub(1, 2) == "--") then local ok, body = Ether.universalHttpGet(data.rawUrl) if ok then codeToRun = body end end
 		if codeToRun and codeToRun:sub(1,2) ~= "--" then Ether.executeSource(codeToRun, "=HubScript")
 		else Ether.hub:Toast("Failed to load code", Ether.EtherExecutor) end
 		overlay:Destroy()
@@ -119,10 +159,7 @@ local function createReadOnlyPopup(data)
 	
 	saveBtn.MouseButton1Click:Connect(function()
 		local codeToSave = data.fetchedCode or data.scriptCode
-		if data.isUrl and (not codeToSave or codeToSave:sub(1, 2) == "--") then
-			local ok, body = Ether.universalHttpGet(data.rawUrl)
-			if ok then codeToSave = body end
-		end
+		if data.isUrl and (not codeToSave or codeToSave:sub(1, 2) == "--") then local ok, body = Ether.universalHttpGet(data.rawUrl) if ok then codeToSave = body end end
 		if codeToSave and codeToSave:sub(1,2) ~= "--" then
 			local ok, path = hub:SaveAsFile({ title = data.title, scriptCode = codeToSave, source = data.source }, "lua")
 			if ok then
@@ -135,10 +172,7 @@ local function createReadOnlyPopup(data)
 	
 	loadBtn.MouseButton1Click:Connect(function()
 		local codeToAdd = data.fetchedCode or data.scriptCode
-		if data.isUrl and (not codeToAdd or codeToAdd:sub(1, 2) == "--") then
-			local ok, body = Ether.universalHttpGet(data.rawUrl)
-			if ok then codeToAdd = body end
-		end
+		if data.isUrl and (not codeToAdd or codeToAdd:sub(1, 2) == "--") then local ok, body = Ether.universalHttpGet(data.rawUrl) if ok then codeToAdd = body end end
 		if codeToAdd and codeToAdd:sub(1,2) ~= "--" then
 			Ether.tabEditor:AddTab(data.title, codeToAdd)
 			Ether.exeTabs.CodeTab:Select()

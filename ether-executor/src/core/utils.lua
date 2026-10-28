@@ -95,6 +95,15 @@ end
 function Ether.resolveScriptBloxImage(data) if not data then return nil end local function pick(values) for _,value in ipairs(values) do local normalized=normalizeImageUrl(value, "https://scriptblox.com") if normalized and isMeaningfulImageUrl(normalized) then return normalized end end end local fromScript=pick({data.image, data.imageUrl, data.thumbnail, data.coverImage, data.icon}) if fromScript then return fromScript end local game=data.game or {} local fromGame=pick({game.imageUrl, game.thumbnail, game.image, game.coverImage, game.icon}) if fromGame then return fromGame end return nil end
 function Ether.resolveRScriptsImage(data) if not data then return nil end local candidates={data.image, data.imageUrl, data.thumbnail, data.cover, data.banner, data.img} for _,value in ipairs(candidates) do local normalized=normalizeImageUrl(value, "https://rscripts.net") if normalized then return normalized end end local game=data.game if game then local gameFields={game.imgurl, game.imageUrl, game.image, game.thumbnail, game.cover, game.banner, game.gameLogo} for _,value in ipairs(gameFields) do local normalized=normalizeImageUrl(value, "https://rscripts.net") if normalized then return normalized end end end return nil end
 function Ether.resolveRobloxScriptsImage(data) if not data then return nil end local candidates={data.image, data.imageUrl, data.thumbnail, data.game and data.game.iconUrl, data.game and data.game.image} for _,value in ipairs(candidates) do local normalized=normalizeImageUrl(value, "https://robloxscripts.com") if normalized and isMeaningfulImageUrl(normalized) then return normalized end end return nil end
+function Ether.resolveHaxHellImage(data)
+	if not data then return nil end
+	local candidates = { data.media and data.media.thumbnailUrl, data.game and data.game.thumbnailUrl }
+	for _, value in ipairs(candidates) do
+		local normalized = normalizeImageUrl(value, "https://haxhell.com")
+		if normalized and isMeaningfulImageUrl(normalized) then return normalized end
+	end
+	return nil
+end
 function Ether.buildRobloxThumbnail(placeId) local id=tostring(placeId or "") if id=="" or id=="0" then return nil end return "https://www.roblox.com/Thumbs/PlaceThumbnail.ashx?width=420&height=270&format=png&placeId="..id end
 function Ether.tryFetchPlaceIcon(placeId, imageLabel) if not MarketplaceService or not placeId or not imageLabel then return end coroutine.wrap(function() local ok,info=pcall(function() return MarketplaceService:GetProductInfo(tonumber(placeId), Enum.InfoType.Asset) end) if not ok or not info then return end local iconId=info.ImageIconAssetId if iconId and iconId~=0 then imageLabel.Image="rbxassetid://"..iconId imageLabel.ImageTransparency=0 end end)() end
 

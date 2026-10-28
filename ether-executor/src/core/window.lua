@@ -92,7 +92,9 @@ function Ether.AddTab(TabConfig)
 	
 	if TabConfig.IsAutoLayout then Ether.Create("UIListLayout", { FillDirection=Enum.FillDirection.Vertical, Padding=UDim.new(0,5), SortOrder=Enum.SortOrder.LayoutOrder, Parent=tabContainer }) end
 
-	tab.buttonTitle = tabButtonTitle tab.buttonInstance = tabButtonFrame tab.containerInstance = tabContainer
+	tab.buttonTitle = tabButtonTitle
+	tab.buttonInstance = tabButtonFrame
+	tab.containerInstance = tabContainer
 
 	function tab:Select()
 		for _, otherTab in ipairs(Ether.window.tabs) do

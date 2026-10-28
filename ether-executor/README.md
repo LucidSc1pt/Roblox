@@ -1,3 +1,4 @@
+# FOLDER STRUCTURE
 ```
 ether-executor/
 ├── loader.lua                (Ini yang di-copy paste user ke executor)
@@ -20,3 +21,5 @@ ether-executor/
         ├── clock.lua         (Header Clock)
         └── toggle.lua        (Floating Toggle Button)
 ```
+
+I'm so bored, then I make this...

@@ -54,7 +54,7 @@ end
 
 print("[Ether] Memulai loading modular...")
 
--- Urutan Load Core (Wajib berurutan)
+-- Core
 LoadModule("core/init")
 LoadModule("core/services")
 LoadModule("core/ui_helper")
@@ -64,8 +64,18 @@ LoadModule("core/ui_components")
 LoadModule("core/tab_reuse")
 LoadModule("core/window")
 
+-- Features
+LoadModule("features/toggle")
+LoadModule("features/clock")
+
+-- Tabs
 LoadModule("tabs/editor")
 LoadModule("tabs/info")
-print("[Ether] Tahap 3 berhasil di-load!")
+LoadModule("tabs/search")
+LoadModule("tabs/saved")
+LoadModule("tabs/settings")
+
+-- Finalize
+LoadModule("core/finalize")
 
 print("[Ether] Core modules berhasil di-load!")

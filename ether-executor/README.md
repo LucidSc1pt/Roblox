@@ -1,3 +1,5 @@
+I’m really bored, and I’ve got an idea to try building an internal script executor. It’s just for fun. This script is an "AI vibecode" project.
+
 # FOLDER STRUCTURE
 ```
 ether-executor/
@@ -21,5 +23,3 @@ ether-executor/
         ├── clock.lua         (Header Clock)
         └── toggle.lua        (Floating Toggle Button)
 ```
-
-I'm so bored, then I make this...

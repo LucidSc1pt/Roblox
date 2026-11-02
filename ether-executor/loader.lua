@@ -1,13 +1,30 @@
--- ╔═══════════════════════════╗
--- ║     ETHER EXECUTOR LOADER      ║
--- ║   by LucidSc1pt and DeepSeek   ║
--- ╚═══════════════════════════╝
+--[[
+
+   ('-.   .-') _    ('-. .-.   ('-.  _  .-')   
+ _(  OO) (  OO) )  ( OO )  / _(  OO)( \( -O )  
+(,------./     '._ ,--. ,--.(,------.,------.  
+ |  .---'|'--...__)|  | |  | |  .---'|   /`. ' 
+ |  |    '--.  .--'|   .|  | |  |    |  /  | | 
+(|  '--.    |  |   |       |(|  '--. |  |_.' | 
+ |  .--'    |  |   |  .-.  | |  .--' |  .  '.' 
+ |  `---.   |  |   |  | |  | |  `---.|  |\  \  
+ `------'   `--'   `--' `--' `------'`--' '--' 
+
+╔═══════════════════════════╗
+║     ETHER EXECUTOR LOADER      ║
+║   by LucidSc1pt and DeepSeek   ║
+╚═══════════════════════════╝
+
+]]
 
 -- =======================
 -- ==== CONFIGURATION ====
 -- =======================
 local LOAD_MODE = "CACHE" 
 
+-- =======================
+-- ====    LOADER    ====
+-- =======================
 local BASE_URL = "https://raw.githubusercontent.com/LucidSc1pt/Roblox/refs/heads/main/ether-executor/src/"
 local CACHE_DIR = "EtherExecutor_Modules"
 
@@ -87,7 +104,7 @@ end
 
 print("[Ether] Memulai loading... (Mode: " .. LOAD_MODE .. ")")
 
--- Core
+-- Core Loader
 LoadModule("core/init")
 LoadModule("core/services")
 LoadModule("core/ui_helper")

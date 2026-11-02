@@ -1,62 +1,91 @@
--- ╔══════════════════════════════════════════════════════════════╗
--- ║  ETHER EXECUTOR LOADER (v3 Network-First + Cache Fallback)   ║
--- ╚══════════════════════════════════════════════════════════════╝
+-- ╔═══════════════════════════╗
+-- ║     ETHER EXECUTOR LOADER      ║
+-- ║   by LucidSc1pt and DeepSeek   ║
+-- ╚═══════════════════════════╝
 
--- URL GitHub kamu
+-- =======================
+-- ==== CONFIGURATION ====
+-- =======================
+local LOAD_MODE = "CACHE" 
+
 local BASE_URL = "https://raw.githubusercontent.com/LucidSc1pt/Roblox/refs/heads/main/ether-executor/src/"
 local CACHE_DIR = "EtherExecutor_Modules"
 
 if isfolder and makefolder and not isfolder(CACHE_DIR) then
     pcall(makefolder, CACHE_DIR)
+else
+    LOAD_MODE = "HTTP"
 end
 
 local function LoadModule(modulePath)
     local safeName = modulePath:gsub("/", "_") .. ".lua"
     local cachePath = CACHE_DIR .. "/" .. safeName
-    local scriptContent = nil
-
-    -- 1. SELALU COBA DOWNLOAD DARI GITHUB (Network-First)
-    local okDownload, response = pcall(game.HttpGet, game, BASE_URL .. modulePath .. ".lua")
     
-    if okDownload and response and response ~= "" then
-        scriptContent = response
-        -- Simpan ke cache lokal sebagai backup (kalau internet mati)
-        if writefile then pcall(writefile, cachePath, scriptContent) end
+    local cacheContent = nil
+    local remoteContent = nil
+
+    if isfile and readfile and isfile(cachePath) then
+        local okRead, content = pcall(readfile, cachePath)
+        if okRead and content and content ~= "" then
+            cacheContent = content
+        end
     else
-        -- 2. KALAU GAGAL DOWNLOAD, BARU BACA DARI CACHE
-        warn("[Ether Loader] Gagal download " .. modulePath .. " (Cek internet/GitHub). Menggunakan cache lokal...")
-        if isfile and readfile and isfile(cachePath) then
-            local okRead, content = pcall(readfile, cachePath)
-            if okRead and content and content ~= "" then
-                scriptContent = content
+        LOAD_MODE = "HTTP"
+    end
+
+    if LOAD_MODE == "HTTP" then
+        local okDownload, response = pcall(game.HttpGet, game, BASE_URL .. modulePath .. ".lua")
+        if okDownload and response and response ~= "" then
+            remoteContent = response
+            if writefile then pcall(writefile, cachePath, remoteContent) end -- Update cache
+        elseif cacheContent then
+            warn("[Ether] Gagal download " .. modulePath .. ". Menggunakan Cache lokal.")
+            remoteContent = cacheContent
+        else
+            warn("[Ether] FATAL: Gagal download " .. modulePath .. " dan tidak ada cache.")
+            return nil
+        end
+        
+    else
+        local okDownload, response = pcall(game.HttpGet, game, BASE_URL .. modulePath .. ".lua")
+        
+        if okDownload and response and response ~= "" then
+            remoteContent = response
+            
+            if cacheContent ~= remoteContent then
+                if writefile then 
+                    pcall(writefile, cachePath, remoteContent) 
+                    print("[Ether] Update terdeteksi: " .. modulePath .. " (Cache diperbarui)")
+                end
+            end
+        else
+            if cacheContent then
+                remoteContent = cacheContent
+            else
+                warn("[Ether] FATAL: Tidak ada internet dan tidak ada cache untuk " .. modulePath)
+                return nil
             end
         end
     end
 
-    -- 3. JIKA TETAP KOSONG (Gagal download & Cache gak ada)
-    if not scriptContent then
-        warn("[Ether Loader] FATAL: Module [" .. modulePath .. "] tidak ada di cache dan gagal di-download.")
-        return nil
-    end
-
-    -- 4. Compile Script
-    local func, err = loadstring(scriptContent, "=" .. modulePath)
+    -- 3. Compile Script
+    local func, err = loadstring(remoteContent, "=" .. modulePath)
     if not func then
-        warn("[Ether Loader] SYNTAX ERROR di module [" .. modulePath .. "]:\n" .. tostring(err))
+        warn("[Ether] SYNTAX ERROR di module [" .. modulePath .. "]:\n" .. tostring(err))
         return nil
     end
 
-    -- 5. Jalankan Script dengan pcall (Anti Silent Crash)
+    -- 4. Jalankan
     local success, result = pcall(func)
     if not success then
-        warn("[Ether Loader] RUNTIME ERROR di module [" .. modulePath .. "]:\n" .. tostring(result))
+        warn("[Ether] RUNTIME ERROR di module [" .. modulePath .. "]:\n" .. tostring(result))
         return nil
     end
 
     return result
 end
 
-print("[Ether] Memulai loading modular...")
+print("[Ether] Memulai loading... (Mode: " .. LOAD_MODE .. ")")
 
 -- Core
 LoadModule("core/init")

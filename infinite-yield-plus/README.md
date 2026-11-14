@@ -1,29 +1,31 @@
 # InfiniteYieldPlus
 
-UI alternatif untuk [Infinite Yield](https://github.com/EdgeIY/infiniteyield),
-dirancang khusus untuk **mobile dan PC**, dengan fitur pencarian command dan
-sistem simpan-favorit, tanpa perlu fork source IY.
+An alternative UI for [Infinite Yield](https://github.com/EdgeIY/infiniteyield),
+designed specifically for **mobile and PC**. It features command search
+and a favorites system—all without requiring a fork of the original IY source code.
 
-## ✨ Fitur
-- Tata letak responsif — otomatis menyesuaikan mode HP/tablet vs desktop
-- 🔍 Pencarian command realtime
-- Tab kategori (Movement, Combat, Teleport, Visual, Utility)
-- Tombol **Run** dan **Save** di setiap command
-- Daftar favorit tersimpan lintas sesi (jika executor mendukung `writefile`)
+## Features
+- Responsive layout — automatically adapts between mobile/tablet and desktop modes
+- 🔍 Real-time command search
+- Category tabs (Movement, Combat, Teleport, Visual, Utility)
+- **Run** and **Save** buttons for every command
+- Favorites list persists across sessions (provided your executor supports `writefile`)
 
-## 📦 Instalasi
+## Installation
 
-1. Pastikan **Infinite Yield** sudah dijalankan lebih dulu.
-2. Jalankan `dist/InfiniteYieldPlus.lua` via executor, contoh:
+1. Ensure **Infinite Yield** is already running.
+2. Execute `dist/InfiniteYieldPlus.lua` via your executor, for example:
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/<user>/InfiniteYieldPlus/main/dist/InfiniteYieldPlus.lua"))()
+loadstring(game:HttpGet(
+  "https://raw.githubusercontent.com/LucidSc1pt/Roblox/main/infinite-yield-plus/dist/InfiniteYieldPlus.lua"
+))()
 ```
 
-# Structure Folder
+# Folder Structure
 ```
 InfiniteYieldPlus/
-├── README.md                  → cara install, screenshot, roadmap
+├── README.md                  → installation guide, screenshots, roadmap
 ├── src/
 │   ├── init.lua
 │   ├── Core/
@@ -37,7 +39,7 @@ InfiniteYieldPlus/
 │   │   ├── CommandRow.lua
 │   │   └── TabBar.lua
 │   └── Data/
-│       └── commands.lua        → data mentah command (nama + desc + kategori)
+│       └── commands.lua        → raw command data (name + description + category)
 └── dist/
-    └── InfiniteYieldPlus.lua   → build single-file untuk loadstring
+    └── InfiniteYieldPlus.lua   → single-file build for use with loadstring
 ```

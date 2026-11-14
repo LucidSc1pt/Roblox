@@ -21,7 +21,7 @@ local MODULES = {
 local HEADER = [==[
 -- ============================================================
 -- InfiniteYieldPlus — generated file, do not edit directly
--- Source: https://github.com/<user>/InfiniteYieldPlus
+-- Source: https://github.com/LucidSc1pt/Roblox/infinite-yield-plus
 -- Build:  lua build.lua
 -- ============================================================
 

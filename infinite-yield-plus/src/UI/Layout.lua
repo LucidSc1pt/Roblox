@@ -11,13 +11,11 @@ end
 function Layout.getPanelSize()
     local viewport = workspace.CurrentCamera.ViewportSize
     if Layout.isMobile() then
-        -- Mobile: hampir fullscreen, dengan margin kecil
-        return UDim2.new(1, -24, 1, -80)
+        return UDim2.new(0.85, 0, 0.62, 0)      -- 85% × 62%, dari sebelumnya 100%×80%
     else
-        -- PC: window mengambang, ukuran tetap tapi dibatasi viewport
-        local w = math.min(560, viewport.X * 0.5)
-        local h = math.min(480, viewport.Y * 0.75)
-        return UDim2.fromOffset(w, h)
+        local w = math.min(400, viewport.X * 0.4)
+        local h = math.min(360, viewport.Y * 0.65)
+        return UDim2.fromOffset(w, h)            -- 400×360, dari sebelumnya 560×480
     end
 end
 

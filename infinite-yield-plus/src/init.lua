@@ -53,19 +53,42 @@ renderList = function()
     listLayout.Padding = UDim.new(0, 6)
     listLayout.Parent = ui.List
 
+    local entries = {}
+
     if currentTab == "Saved" then
         for _, name in ipairs(Saved.list()) do
-            local entry = findEntry(name)
-            if entry then
-                createRow(ui.List, entry.name, entry.desc, runCommand, saveCommand)
+            for _, e in ipairs(Registry.all()) do
+                if e.name == name then
+                    table.insert(entries, e)
+                    break
+                end
             end
         end
+    elseif currentTab == "All" then
+        entries = Registry.all()
     else
-        local cat = (currentTab == "All") and nil or currentTab
-        for _, entry in ipairs(Registry.filter(ui.Search.Text, cat)) do
-            createRow(ui.List, entry.name, entry.desc, runCommand, saveCommand)
-        end
+        entries = Registry.filter("", currentTab)
     end
+
+    -- Apply search filter secara terpisah (setelah tentukan base list)
+    local query = ui.Search.Text
+    if query and query ~= "" then
+        local lowerQuery = query:lower()
+        local filtered = {}
+        for _, e in ipairs(entries) do
+            if e.name:lower():find(lowerQuery, 1, true) then
+                table.insert(filtered, e)
+            end
+        end
+        entries = filtered
+    end
+
+    for _, entry in ipairs(entries) do
+        createRow(ui.List, entry, runCommand, saveCommand)
+    end
+
+    print(string.format("[IY+] Rendered %d entries for tab '%s' (query='%s')",
+        #entries, currentTab, query or ""))
 end
 
 -- 9. TabBar: All + Saved + semua kategori dari registry

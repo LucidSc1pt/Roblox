@@ -1,7 +1,7 @@
 I'm really bored, and I've got an idea to try building an internal script executor.  It's just for fun.  This script is an "AI vibecode" project with DeepSeek.
 
 # Load Script
-```
+```lua
 loadstring(game:HttpGet(
   "https://raw.githubusercontent.com/LucidSc1pt/Roblox/main/ether-executor/loader.lua"
 ))()

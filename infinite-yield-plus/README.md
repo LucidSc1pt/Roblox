@@ -1,8 +1,8 @@
 # InfiniteYieldPlus
 
 An alternative UI for [Infinite Yield](https://github.com/EdgeIY/infiniteyield),
-designed specifically for **mobile and PC**. It features command search
-and a favorites system—all without requiring a fork of the original IY source code.
+designed specifically for **Mobile and PC**. It features command search
+and a favorites system all without requiring a fork of the original IY source code.
 
 ## Features
 - Responsive layout — automatically adapts between mobile/tablet and desktop modes
@@ -16,7 +16,7 @@ and a favorites system—all without requiring a fork of the original IY source 
 1. Ensure **Infinite Yield** is already running.
 2. Execute `dist/InfiniteYieldPlus.lua` via your executor, for example:
 
-```lua
+```luau
 loadstring(game:HttpGet(
   "https://raw.githubusercontent.com/LucidSc1pt/Roblox/main/infinite-yield-plus/dist/InfiniteYieldPlus.lua"
 ))()
@@ -43,3 +43,7 @@ InfiniteYieldPlus/
 └── dist/
     └── InfiniteYieldPlus.lua   → single-file build for use with loadstring
 ```
+
+# License
+Open Source.
+Free to use and modify whatever you want.

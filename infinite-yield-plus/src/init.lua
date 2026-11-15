@@ -12,17 +12,23 @@ local TabBar    = require(UIMod.TabBar)
 -- 1. Tunggu IY siap
 IYBridge.waitUntilReady()
 
--- 1b. Auto-extract commands dari IY GUI
-print("[IY+] Extracting commands from IY...")
-local autoCmds = IYBridge.extractCommands(15)
-print("[IY+] Found " .. #autoCmds .. " commands")
-Registry.setAutoCommands(autoCmds)
+-- 2. Load daftar favorit tersimpan
+Saved.load()
 
--- 4. State
+-- 3. Bangun UI (wajib di atas sebelum renderList dipanggil)
+local ui = Builder.create()
+
+-- 4. Ekstrak command otomatis dari IY (Auto-detect)
+local autoCmds = IYBridge.extractCommands(15)
+if #autoCmds > 0 then
+    Registry.setAutoCommands(autoCmds)
+end
+
+-- 5. State
 local currentTab = "All"
 local renderList, runCommand, saveCommand -- forward declaration
 
--- 5. Fungsi run
+-- 6. Fungsi run
 runCommand = function(cmdName)
     local ok, err = pcall(function()
         IYBridge.execCmd(cmdName, game.Players.LocalPlayer)
@@ -32,17 +38,10 @@ runCommand = function(cmdName)
     end
 end
 
--- 6. Fungsi save (toggle)
+-- 7. Fungsi save (toggle)
 saveCommand = function(cmdName)
     local nowSaved = Saved.toggle(cmdName)
     if currentTab == "Saved" and renderList then renderList() end
-end
-
--- 7. Lookup entry by name (untuk render tab Saved)
-local function findEntry(name)
-    for _, c in ipairs(Registry.all()) do
-        if c.name == name then return c end
-    end
 end
 
 -- 8. Render command list
@@ -83,14 +82,7 @@ renderList = function()
     end
 end
 
-Saved.load()
-local ui = Builder.create()
-
-local autoCmds = IYBridge.extractCommands(15)
-if #autoCmds > 0 then
-    Registry.setAutoCommands(autoCmds)
-end
-
+-- 9. TabBar
 local tabs = { "All", "Saved" }
 for _, cat in ipairs(Registry.categories()) do
     tabs[#tabs+1] = cat
@@ -101,5 +93,8 @@ TabBar.create(ui.TabBarSlot, tabs, function(selected)
     renderList()
 end, "All")
 
+-- 10. Search event realtime
 ui.Search:GetPropertyChangedSignal("Text"):Connect(renderList)
+
+-- 11. Initial render (tanpa print apapun)
 renderList()

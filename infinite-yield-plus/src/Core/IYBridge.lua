@@ -1,6 +1,4 @@
--- Core/IYBridge.lua
 local Players = game:GetService("Players")
-
 local IYBridge = {}
 
 local cachedCmdbar = nil
@@ -26,7 +24,6 @@ local function getContainers()
     return out
 end
 
--- Cari Holder IY lewat Title label (paling stabil)
 local function findHolder()
     if cachedHolder and cachedHolder.Parent then return cachedHolder end
     for _, container in ipairs(getContainers()) do
@@ -45,13 +42,10 @@ local function findHolder()
     return nil
 end
 
--- Cari TextBox Cmdbar yang sudah di-rename jadi "Input"
 local function findCmdbar()
     if cachedCmdbar and cachedCmdbar.Parent then return cachedCmdbar end
     local holder = findHolder()
     if not holder then return nil end
-
-    -- Prioritas: TextBox "Input" di bawah Frame "Cmdbar"
     for _, obj in ipairs(holder:GetDescendants()) do
         if obj:IsA("TextBox")
             and obj.Name == "Input"
@@ -61,7 +55,6 @@ local function findCmdbar()
             return obj
         end
     end
-    -- Fallback: TextBox apa pun di Holder (cuma ada 1 = Cmdbar)
     for _, obj in ipairs(holder:GetDescendants()) do
         if obj:IsA("TextBox") then
             cachedCmdbar = obj
@@ -69,6 +62,112 @@ local function findCmdbar()
         end
     end
     return nil
+end
+
+-- Keyword → tipe argumen
+local NUMBER_KEYWORDS = {
+    "num", "number", "delay", "distance", "radius", "brightness",
+    "size", "transparency", "speed", "amount", "seconds",
+}
+
+local STRING_KEYWORDS = {
+    "url", "text", "statetype", "emote", "key", "type", "cmd", "alias",
+}
+
+-- Cek keyword dengan word-boundary (awal / akhir / standalone)
+local function matchKeyword(lower, kw)
+    if lower == kw then return true end
+    if lower:match("^" .. kw .. "%s") then return true end
+    if lower:match("%s" .. kw .. "$") then return true end
+    return false
+end
+
+local function parseArgGroup(raw)
+    local group = raw:match("^%s*(.-)%s*$")
+    if group == "" then return nil end
+    local lower = group:lower()
+
+    -- 1. "X Y Z" — koordinat 3 sumbu
+    local upper = group:gsub("%s", "")
+    if upper:match("^[XYZ]+$") and #upper == 3 then
+        return {
+            { type = "number", key = "X", placeholder = "0", default = "" },
+            { type = "number", key = "Y", placeholder = "0", default = "" },
+            { type = "number", key = "Z", placeholder = "0", default = "" },
+        }
+    end
+
+    -- 2. Range numerik, misal "1-10" atau "0-255"
+    if lower:match("^%d+%s*%-%s*%d+$") then
+        return { { type = "number", key = "value", placeholder = group, default = "" } }
+    end
+
+    -- 3. Angka tunggal, misal "5" atau "100"
+    if lower:match("^%d+$") then
+        return { { type = "number", key = "value", placeholder = group, default = group } }
+    end
+
+    -- 4. Boolean
+    if lower == "true" or lower == "false"
+        or lower:match("^true%s*/%s*false$") then
+        return { { type = "bool", key = "toggle", placeholder = "true / false", default = "" } }
+    end
+
+    -- 5. Player
+    if lower:match("player") then
+        return { { type = "player", key = "player", placeholder = "all", default = "all" } }
+    end
+
+    -- 6. ID
+    if lower == "id" or lower:match("%sid$") or lower:match("^id%s") then
+        return { { type = "id", key = "ID", placeholder = group, default = "" } }
+    end
+
+    -- 7. Keyword angka
+    for _, kw in ipairs(NUMBER_KEYWORDS) do
+        if matchKeyword(lower, kw) then
+            return { { type = "number", key = kw, placeholder = group, default = "" } }
+        end
+    end
+
+    -- 8. Keyword string
+    for _, kw in ipairs(STRING_KEYWORDS) do
+        if matchKeyword(lower, kw) then
+            return { { type = "string", key = kw, placeholder = group, default = "" } }
+        end
+    end
+
+    -- 9. Fallback nama
+    if lower:match("name") then
+        return { { type = "string", key = "name", placeholder = group, default = "" } }
+    end
+
+    -- 10. Fallback umum
+    return { { type = "string", key = group, placeholder = group, default = "" } }
+end
+
+local function parseArgsFromTitle(title)
+    local args = {}
+    for group in title:gmatch("%[([^%]]+)%]") do
+        local parsed = parseArgGroup(group)
+        if parsed then
+            for _, a in ipairs(parsed) do
+                table.insert(args, a)
+            end
+        end
+    end
+    return args
+end
+
+local function parseCMDName(raw)
+    local stripped = raw:gsub("%s*%[[^%]]*%]", "")
+    local parts = {}
+    for part in stripped:gmatch("([^/]+)") do
+        part = part:gsub("^%s+", ""):gsub("%s+$", "")
+        if part ~= "" then table.insert(parts, part) end
+    end
+    if #parts == 0 then return nil end
+    return parts[1], parts
 end
 
 function IYBridge.isReady()
@@ -82,40 +181,19 @@ function IYBridge.waitUntilReady(timeout)
         if IYBridge.isReady() then return true end
         task.wait(0.25)
     end
-
-    local env = getEnv()
-    local status = string.format(
-        "\n  IY_LOADED     : %s" ..
-        "\n  execCmd       : %s" ..
-        "\n  Title(holder) : %s" ..
-        "\n  Cmdbar        : %s" ..
-        "\n  gethui        : %s" ..
-        "\n  firefocuslost : %s",
-        tostring(env.IY_LOADED),
-        tostring(type(env.execCmd) == "function"),
-        tostring(findHolder() ~= nil),
-        tostring(findCmdbar() ~= nil),
-        tostring(gethui ~= nil),
-        tostring(type(firefocuslost) == "function")
-    )
-    error("[IY+] Infinite Yield tidak siap dalam " .. (timeout or 20) .. "s. Status:" .. status)
+    error("[IY+] Infinite Yield tidak siap dalam " .. (timeout or 20) .. "s.")
 end
 
 function IYBridge.execCmd(cmdStr, speaker)
-    -- Jalur 1: kalau executor kebetulan expose (jarang tapi gratis dicoba)
     local env = getEnv()
     if type(env.execCmd) == "function" then
-        local ok, err = pcall(env.execCmd, cmdStr, speaker or Players.LocalPlayer)
+        local ok = pcall(env.execCmd, cmdStr, speaker or Players.LocalPlayer)
         if ok then return end
-        warn("[IY+] execCmd dari env gagal, fallback Cmdbar:", err)
     end
-
     local cmdbar = findCmdbar()
     if not cmdbar then
-        error("[IY+] Cmdbar IY tidak ditemukan. IY mungkin belum selesai loading.")
+        error("[IY+] Cmdbar IY tidak ditemukan.")
     end
-
-    -- Jalur 2: firefocuslost (kalau executor support)
     if type(firefocuslost) == "function" then
         local ok = pcall(function()
             cmdbar.Text = cmdStr
@@ -123,35 +201,16 @@ function IYBridge.execCmd(cmdStr, speaker)
         end)
         if ok then return end
     end
-
-    -- Jalur 3: CaptureFocus -> ReleaseFocus(true)
     local ok, err = pcall(function()
         cmdbar:CaptureFocus()
         task.wait(0.1)
-        if not cmdbar:IsFocused() then
-            cmdbar:CaptureFocus()
-            task.wait(0.1)
-        end
         cmdbar.Text = cmdStr
         task.wait()
         cmdbar:ReleaseFocus(true)
     end)
     if not ok then
-        error("[IY+] Gagal trigger Cmdbar (" .. tostring(err) .. "). "
-            .. "Executor mungkin tidak support CaptureFocus/ReleaseFocus.")
+        error("[IY+] Gagal trigger Cmdbar: " .. tostring(err))
     end
-end
-
--- Parsing: "speed / ws / walkspeed [num]" → name="speed", aliases={"ws","walkspeed"}
-local function parseCMDName(raw)
-    local stripped = raw:gsub("%s*%[[^%]]*%]", "")
-    local parts = {}
-    for part in stripped:gmatch("([^/]+)") do
-        part = part:gsub("^%s+", ""):gsub("%s+$", "")
-        if part ~= "" then table.insert(parts, part) end
-    end
-    if #parts == 0 then return nil end
-    return parts[1], parts
 end
 
 function IYBridge.extractCommands(timeout)
@@ -160,15 +219,16 @@ function IYBridge.extractCommands(timeout)
         local holder = findHolder()
         if holder then
             local cmdsFrame = holder:FindFirstChild("CMDs")
-            -- Tunggu sampai CMDsF terisi (IY populate setelah Cmdbar)
             if cmdsFrame and #cmdsFrame:GetChildren() > 20 then
                 local list = {}
+                local index = 0
                 for _, child in ipairs(cmdsFrame:GetChildren()) do
                     if child:IsA("TextButton") then
                         local title = child:GetAttribute("Title")
                         if title and title ~= "" then
                             local primary, parts = parseCMDName(title)
                             if primary then
+                                index = index + 1
                                 local aliases = {}
                                 for i = 2, #parts do
                                     table.insert(aliases, parts[i])
@@ -178,6 +238,8 @@ function IYBridge.extractCommands(timeout)
                                     fullName = title,
                                     aliases = aliases,
                                     desc = child:GetAttribute("Desc") or "",
+                                    args = parseArgsFromTitle(title),
+                                    order = index,
                                 })
                             end
                         end
@@ -189,18 +251,6 @@ function IYBridge.extractCommands(timeout)
         task.wait(0.3)
     end
     return {}
-end
-
-function IYBridge.diagnose()
-    local env = getEnv()
-    return {
-        IY_LOADED     = env.IY_LOADED,
-        execCmd       = type(env.execCmd) == "function",
-        title         = findHolder() ~= nil,
-        cmdbar        = findCmdbar() ~= nil,
-        gethui        = gethui ~= nil,
-        firefocuslost = type(firefocuslost) == "function",
-    }
 end
 
 return IYBridge

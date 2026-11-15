@@ -18,12 +18,6 @@ local autoCmds = IYBridge.extractCommands(15)
 print("[IY+] Found " .. #autoCmds .. " commands")
 Registry.setAutoCommands(autoCmds)
 
--- 2. Load daftar favorit tersimpan
-Saved.load()
-
--- 3. Bangun UI
-local ui = Builder.create()
-
 -- 4. State
 local currentTab = "All"
 local renderList, runCommand, saveCommand -- forward declaration
@@ -41,7 +35,6 @@ end
 -- 6. Fungsi save (toggle)
 saveCommand = function(cmdName)
     local nowSaved = Saved.toggle(cmdName)
-    print("[IY+] " .. (nowSaved and "Disimpan: " or "Dihapus: ") .. cmdName)
     if currentTab == "Saved" and renderList then renderList() end
 end
 
@@ -57,17 +50,14 @@ renderList = function()
     ui.List:ClearAllChildren()
     local listLayout = Instance.new("UIListLayout")
     listLayout.Padding = UDim.new(0, 6)
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = ui.List
 
     local entries = {}
-
     if currentTab == "Saved" then
         for _, name in ipairs(Saved.list()) do
             for _, e in ipairs(Registry.all()) do
-                if e.name == name then
-                    table.insert(entries, e)
-                    break
-                end
+                if e.name == name then table.insert(entries, e) break end
             end
         end
     elseif currentTab == "All" then
@@ -76,7 +66,6 @@ renderList = function()
         entries = Registry.filter("", currentTab)
     end
 
-    -- Apply search filter secara terpisah (setelah tentukan base list)
     local query = ui.Search.Text
     if query and query ~= "" then
         local lowerQuery = query:lower()
@@ -92,12 +81,16 @@ renderList = function()
     for _, entry in ipairs(entries) do
         createRow(ui.List, entry, runCommand, saveCommand)
     end
-
-    print(string.format("[IY+] Rendered %d entries for tab '%s' (query='%s')",
-        #entries, currentTab, query or ""))
 end
 
--- 9. TabBar: All + Saved + semua kategori dari registry
+Saved.load()
+local ui = Builder.create()
+
+local autoCmds = IYBridge.extractCommands(15)
+if #autoCmds > 0 then
+    Registry.setAutoCommands(autoCmds)
+end
+
 local tabs = { "All", "Saved" }
 for _, cat in ipairs(Registry.categories()) do
     tabs[#tabs+1] = cat
@@ -108,8 +101,5 @@ TabBar.create(ui.TabBarSlot, tabs, function(selected)
     renderList()
 end, "All")
 
--- 10. Search realtime
 ui.Search:GetPropertyChangedSignal("Text"):Connect(renderList)
-
 renderList()
-print("[IY+] UI siap.")

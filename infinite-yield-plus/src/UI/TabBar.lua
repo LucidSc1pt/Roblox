@@ -40,14 +40,14 @@ function TabBar.create(parent, tabs, onSelect, initial)
     for i, tabName in ipairs(tabs) do
         local btn = Instance.new("TextButton")
         btn.Name = tabName
-        btn.Size = UDim2.fromOffset(0, 28)
+        btn.Size = UDim2.fromOffset(0, 24)
         btn.AutomaticSize = Enum.AutomaticSize.X
         btn.BackgroundColor3 = Theme.Colors.Surface
         btn.BorderSizePixel = 0
         btn.Font = Theme.FontBold
         btn.Text = tabName
         btn.TextColor3 = Theme.Colors.TextDim
-        btn.TextSize = 12
+        btn.TextSize = 10
         btn.LayoutOrder = i
         btn.Parent = bar
 

@@ -1,9 +1,19 @@
 -- UI/CommandRow.lua
 local Theme = require(script.Parent.Theme)
 
-local function makeButton(parent, label, color, order, width)
+local COLS = 3
+local ARG_H = 26
+local ARG_GAP = 6
+
+local function calcArgsHeight(n)
+    if n == 0 then return 0 end
+    local rows = math.ceil(n / COLS)
+    return rows * (ARG_H + ARG_GAP) + 4
+end
+
+local function makeButton(parent, label, color, order)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.fromOffset(width or 60, 28)
+    btn.Size = UDim2.fromOffset(60, 28)
     btn.BackgroundColor3 = color
     btn.BorderSizePixel = 0
     btn.Font = Theme.FontBold
@@ -21,7 +31,8 @@ end
 local function createArgInput(parent, argDef, order)
     local input = Instance.new("TextBox")
     input.Name = "arg_" .. argDef.key
-    input.Size = UDim2.fromOffset(90, 26)
+    -- Scale: 1/COLS dari parent, minus gap
+    input.Size = UDim2.new(1 / COLS, -ARG_GAP - 2, 0, ARG_H)
     input.BackgroundColor3 = Theme.Colors.Background
     input.BorderSizePixel = 0
     input.Font = Theme.Font
@@ -51,7 +62,7 @@ local function createRow(parent, entry, onRun, onSave)
     local args = entry.args or {}
     local hasArgs = #args > 0
     local headerHeight = 52
-    local argsHeight = hasArgs and (#args * 32 + 8) or 0
+    local argsHeight = calcArgsHeight(#args)
     local totalHeight = headerHeight + argsHeight
 
     local row = Instance.new("Frame")
@@ -65,16 +76,18 @@ local function createRow(parent, entry, onRun, onSave)
     corner.CornerRadius = Theme.CornerRadius
     corner.Parent = row
 
-    -- Header: nama + desc + tombol
+    local displayName = entry.fullName or entry.name
+
     local name = Instance.new("TextLabel")
     name.Size = UDim2.new(1, -140, 0, 22)
     name.Position = UDim2.fromOffset(10, 6)
     name.BackgroundTransparency = 1
     name.Font = Theme.FontBold
-    name.Text = entry.name
+    name.Text = displayName
     name.TextColor3 = Theme.Colors.Accent
     name.TextSize = 13
     name.TextXAlignment = Enum.TextXAlignment.Left
+    name.TextTruncate = Enum.TextTruncate.AtEnd
     name.Parent = row
 
     local desc = Instance.new("TextLabel")
@@ -100,7 +113,6 @@ local function createRow(parent, entry, onRun, onSave)
     bLayout.Padding = UDim.new(0, 6)
     bLayout.Parent = btnContainer
 
-    -- Arg inputs
     local argInputs = {}
     if hasArgs then
         local argContainer = Instance.new("Frame")
@@ -108,11 +120,14 @@ local function createRow(parent, entry, onRun, onSave)
         argContainer.Size = UDim2.new(1, -20, 0, argsHeight)
         argContainer.Position = UDim2.fromOffset(10, headerHeight)
         argContainer.BackgroundTransparency = 1
+        argContainer.ClipsDescendants = false
         argContainer.Parent = row
 
         local aLayout = Instance.new("UIListLayout")
         aLayout.FillDirection = Enum.FillDirection.Horizontal
-        aLayout.Padding = UDim.new(0, 6)
+        aLayout.Wraps = true                       -- <-- kunci: wrap kalau tidak muat
+        aLayout.Padding = UDim.new(0, ARG_GAP)
+        aLayout.SortOrder = Enum.SortOrder.LayoutOrder
         aLayout.Parent = argContainer
 
         for i, argDef in ipairs(args) do
@@ -120,7 +135,6 @@ local function createRow(parent, entry, onRun, onSave)
         end
     end
 
-    -- Build command dari input
     local function buildCommand()
         if not hasArgs then return entry.name end
         local parts = { entry.name }

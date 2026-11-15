@@ -142,6 +142,55 @@ function IYBridge.execCmd(cmdStr, speaker)
     end
 end
 
+-- Parsing: "speed / ws / walkspeed [num]" → name="speed", aliases={"ws","walkspeed"}
+local function parseCMDName(raw)
+    local stripped = raw:gsub("%s*%[[^%]]*%]", "")
+    local parts = {}
+    for part in stripped:gmatch("([^/]+)") do
+        part = part:gsub("^%s+", ""):gsub("%s+$", "")
+        if part ~= "" then table.insert(parts, part) end
+    end
+    if #parts == 0 then return nil end
+    return parts[1], parts
+end
+
+function IYBridge.extractCommands(timeout)
+    local deadline = tick() + (timeout or 15)
+    while tick() < deadline do
+        local holder = findHolder()
+        if holder then
+            local cmdsFrame = holder:FindFirstChild("CMDs")
+            -- Tunggu sampai CMDsF terisi (IY populate setelah Cmdbar)
+            if cmdsFrame and #cmdsFrame:GetChildren() > 20 then
+                local list = {}
+                for _, child in ipairs(cmdsFrame:GetChildren()) do
+                    if child:IsA("TextButton") then
+                        local title = child:GetAttribute("Title")
+                        if title and title ~= "" then
+                            local primary, parts = parseCMDName(title)
+                            if primary then
+                                local aliases = {}
+                                for i = 2, #parts do
+                                    table.insert(aliases, parts[i])
+                                end
+                                table.insert(list, {
+                                    name = primary,
+                                    fullName = title,
+                                    aliases = aliases,
+                                    desc = child:GetAttribute("Desc") or "",
+                                })
+                            end
+                        end
+                    end
+                end
+                return list
+            end
+        end
+        task.wait(0.3)
+    end
+    return {}
+end
+
 function IYBridge.diagnose()
     local env = getEnv()
     return {

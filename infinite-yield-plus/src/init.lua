@@ -12,6 +12,12 @@ local TabBar    = require(UIMod.TabBar)
 -- 1. Tunggu IY siap
 IYBridge.waitUntilReady()
 
+-- 1b. Auto-extract commands dari IY GUI
+print("[IY+] Extracting commands from IY...")
+local autoCmds = IYBridge.extractCommands(15)
+print("[IY+] Found " .. #autoCmds .. " commands")
+Registry.setAutoCommands(autoCmds)
+
 -- 2. Load daftar favorit tersimpan
 Saved.load()
 

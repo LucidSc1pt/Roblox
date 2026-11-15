@@ -120,4 +120,11 @@ function Registry.categories()
     return out
 end
 
+function Registry.get(name)
+    for _, cmd in ipairs(Registry._all) do
+        if cmd.name == name then return cmd end
+    end
+    return nil
+end
+
 return Registry

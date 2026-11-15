@@ -1,33 +1,16 @@
 -- Core/Saved.lua
+local HttpService = game:GetService("HttpService")
 local Saved = {}
 
 local FILE_PATH = "IYPlus_saved.json"
-local items = {}          -- array of string
-local index = {}          -- set untuk cek cepat
-local canPersist = (typeof(writefile) == "function"
-                and typeof(readfile) == "function")
-
-local function serialize(list)
-    -- escape sederhana untuk JSON-ish
-    local parts = {}
-    for _, v in ipairs(list) do
-        parts[#parts + 1] = '"' .. v:gsub('"', '\\"') .. '"'
-    end
-    return "[" .. table.concat(parts, ",") .. "]"
-end
-
-local function deserialize(str)
-    local out = {}
-    for v in str:gmatch('"([^"]*)"') do
-        out[#out + 1] = v
-    end
-    return out
-end
+local items = {}          -- array of { name, argValues }
+local index = {}          -- name -> item
+local canPersist = (typeof(writefile) == "function" and typeof(readfile) == "function")
 
 local function persist()
     if not canPersist then return end
     pcall(function()
-        writefile(FILE_PATH, serialize(items))
+        writefile(FILE_PATH, HttpService:JSONEncode(items))
     end)
 end
 
@@ -38,18 +21,29 @@ function Saved.load()
         if isfile and not isfile(FILE_PATH) then return end
         local raw = readfile(FILE_PATH)
         if raw and #raw > 0 then
-            for _, v in ipairs(deserialize(raw)) do
-                items[#items + 1] = v
-                index[v] = true
+            local decoded = HttpService:JSONDecode(raw)
+            if type(decoded) == "table" then
+                for _, v in ipairs(decoded) do
+                    -- Backward compatibility (jika sebelumnya string)
+                    if type(v) == "string" then
+                        v = { name = v, argValues = {} }
+                    end
+                    if type(v) == "table" and v.name then
+                        v.argValues = v.argValues or {}
+                        items[#items + 1] = v
+                        index[v.name] = v
+                    end
+                end
             end
         end
     end)
 end
 
-function Saved.add(name)
+function Saved.add(name, argValues)
     if index[name] then return false end
-    items[#items + 1] = name
-    index[name] = true
+    local item = { name = name, argValues = argValues or {} }
+    items[#items + 1] = item
+    index[name] = item
     persist()
     return true
 end
@@ -58,7 +52,7 @@ function Saved.remove(name)
     if not index[name] then return false end
     index[name] = nil
     for i, v in ipairs(items) do
-        if v == name then
+        if v.name == name then
             table.remove(items, i)
             break
         end
@@ -67,15 +61,15 @@ function Saved.remove(name)
     return true
 end
 
-function Saved.toggle(name)
-    if index[name] then
-        Saved.remove(name); return false
-    else
-        Saved.add(name); return true
-    end
+function Saved.update(name, argValues)
+    local item = index[name]
+    if not item then return false end
+    item.argValues = argValues or {}
+    persist()
+    return true
 end
 
-function Saved.has(name) return index[name] == true end
+function Saved.get(name) return index[name] end
 function Saved.list() return items end
 
 return Saved

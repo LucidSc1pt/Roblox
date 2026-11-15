@@ -9,26 +9,19 @@ local Builder   = require(UIMod.Builder)
 local createRow = require(UIMod.CommandRow)
 local TabBar    = require(UIMod.TabBar)
 
--- 1. Tunggu IY siap
 IYBridge.waitUntilReady()
-
--- 2. Load daftar favorit tersimpan
 Saved.load()
 
--- 3. Bangun UI (wajib di atas sebelum renderList dipanggil)
 local ui = Builder.create()
-
--- 4. Ekstrak command otomatis dari IY (Auto-detect)
 local autoCmds = IYBridge.extractCommands(15)
 if #autoCmds > 0 then
     Registry.setAutoCommands(autoCmds)
 end
 
--- 5. State
 local currentTab = "All"
-local renderList, runCommand, saveCommand -- forward declaration
+local currentRows = {}
+local applySearch, buildList, runCommand, onSavedChanged
 
--- 6. Fungsi run
 runCommand = function(cmdName)
     local ok, err = pcall(function()
         IYBridge.execCmd(cmdName, game.Players.LocalPlayer)
@@ -38,15 +31,41 @@ runCommand = function(cmdName)
     end
 end
 
--- 7. Fungsi save (toggle)
-saveCommand = function(cmdName)
-    local nowSaved = Saved.toggle(cmdName)
-    if currentTab == "Saved" and renderList then renderList() end
+onSavedChanged = function(cmdName)
+    if currentTab == "Saved" then
+        buildList()
+    end
 end
 
--- 8. Render command list
-renderList = function()
+applySearch = function(query)
+    query = (query or ""):lower()
+    if query == "" then
+        for _, row in pairs(currentRows) do row.Visible = true end
+        return
+    end
+    for name, row in pairs(currentRows) do
+        local entry = Registry.get(name)
+        local hit = false
+        if entry then
+            -- Pencarian mencakup: Name, FullName (Title beserta aliases), Desc, dan Aliases
+            hit = entry.name:lower():find(query, 1, true) ~= nil
+                or (entry.fullName and entry.fullName:lower():find(query, 1, true) ~= nil)
+                or (entry.desc and entry.desc:lower():find(query, 1, true) ~= nil)
+            if not hit and entry.aliases then
+                for _, a in ipairs(entry.aliases) do
+                    if a:lower():find(query, 1, true) then hit = true break end
+                end
+            end
+        else
+            hit = name:lower():find(query, 1, true) ~= nil
+        end
+        row.Visible = hit
+    end
+end
+
+buildList = function()
     ui.List:ClearAllChildren()
+    currentRows = {}
     local listLayout = Instance.new("UIListLayout")
     listLayout.Padding = UDim.new(0, 6)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -54,9 +73,14 @@ renderList = function()
 
     local entries = {}
     if currentTab == "Saved" then
-        for _, name in ipairs(Saved.list()) do
-            for _, e in ipairs(Registry.all()) do
-                if e.name == name then table.insert(entries, e) break end
+        for _, savedItem in ipairs(Saved.list()) do
+            local baseEntry = Registry.get(savedItem.name)
+            if baseEntry then
+                -- Duplikasi entry agar tidak menimpa state aslinya
+                local copy = {}
+                for k, v in pairs(baseEntry) do copy[k] = v end
+                copy._savedArgs = savedItem.argValues
+                table.insert(entries, copy)
             end
         end
     elseif currentTab == "All" then
@@ -65,24 +89,13 @@ renderList = function()
         entries = Registry.filter("", currentTab)
     end
 
-    local query = ui.Search.Text
-    if query and query ~= "" then
-        local lowerQuery = query:lower()
-        local filtered = {}
-        for _, e in ipairs(entries) do
-            if e.name:lower():find(lowerQuery, 1, true) then
-                table.insert(filtered, e)
-            end
-        end
-        entries = filtered
-    end
-
     for _, entry in ipairs(entries) do
-        createRow(ui.List, entry, runCommand, saveCommand)
+        local row = createRow(ui.List, entry, runCommand, onSavedChanged)
+        currentRows[entry.name] = row
     end
+    applySearch(ui.Search.Text)
 end
 
--- 9. TabBar
 local tabs = { "All", "Saved" }
 for _, cat in ipairs(Registry.categories()) do
     tabs[#tabs+1] = cat
@@ -90,11 +103,19 @@ end
 
 TabBar.create(ui.TabBarSlot, tabs, function(selected)
     currentTab = selected
-    renderList()
+    buildList()
 end, "All")
 
--- 10. Search event realtime
-ui.Search:GetPropertyChangedSignal("Text"):Connect(renderList)
+-- Debounce Pencarian
+local searchToken = 0
+ui.Search:GetPropertyChangedSignal("Text"):Connect(function()
+    searchToken = searchToken + 1
+    local myToken = searchToken
+    task.delay(0.15, function()
+        if myToken == searchToken then
+            applySearch(ui.Search.Text)
+        end
+    end)
+end)
 
--- 11. Initial render (tanpa print apapun)
-renderList()
+buildList()

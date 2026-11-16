@@ -26,7 +26,7 @@ local LOAD_MODE = "CACHE"
 -- Pilihan RUN_MODE (Hanya berlaku jika LOAD_MODE = "CACHE"):
 -- "SYNC"  = Cek update ke GitHub. (Untuk Production)
 -- "LOCAL" = Langsung pakai cache lokal tanpa nembak GitHub. (Untuk Ngetes Edit Lokal)
-local RUN_MODE = "LOCAL" 
+local RUN_MODE = "SYNC" 
 
 -- =======================
 -- ====    LOADER    ====

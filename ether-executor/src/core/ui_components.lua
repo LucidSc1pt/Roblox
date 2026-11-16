@@ -62,11 +62,11 @@ function AdvancedHub:Fetch(engine, query, page)
 	
 	local data, totalPages = {}, 1
 	if engine == "RScripts" then
-		data = dec.scripts or {} totalPages = dec.info and dec.info.maxPages or dec.totalPages or 1
+		-- Support API V1 dan V2
+		data = dec.scripts or (dec.data and dec.data.scripts) or {} 
+		totalPages = dec.info and dec.info.maxPages or (dec.meta and dec.meta.pagination and dec.meta.pagination.scripts and dec.meta.pagination.scripts.totalPages) or dec.totalPages or 1
 	elseif engine == "RobloxScripts" then
-		data = dec.data or {} local pag = dec.pagination or {} totalPages = tonumber(pag.totalPages or pag.pages or pag.lastPage or 1) or 1
-		if pag.total and pag.limit then totalPages = math.ceil(pag.total / math.max(pag.limit, 1)) end
-		totalPages = math.min(totalPages, 200)
+		data = dec.data or {} local pag = dec.pagination or {} totalPages = tonumber(pag.pages or pag.totalPages or 1) or 1
 	elseif engine == "HaxHell" then
 		data = dec.data or {} local pag = dec.pagination or {} totalPages = tonumber(pag.totalPages or 1) or 1
 	else
@@ -76,16 +76,126 @@ function AdvancedHub:Fetch(engine, query, page)
 	local normalized = {}
 	for _, item in ipairs(data) do
 		if engine == "RScripts" then
-			table.insert(normalized, { title = item.title or "No Title", author = item.creator and item.creator.username or item.owner or "Anon", description = item.description or "", views = item.views or 0, likes = item.likes or item.likeCount or 0, source = engine, scriptCode = "", rawUrl = item.rawScript or item.scriptLink or item.raw or item.rawScriptUrl or "", isUrl = true, _raw = item, gameId = item.gameId or (item.game and item.game.gameId) or item.placeId or (item.game and item.game.placeId) })
+			table.insert(normalized, {
+				title = item.title or "No Title",
+				author = item.creator and item.creator.username or "Anon",
+				description = item.description or "",
+				views = item.views or 0,
+				likes = item.likes or 0,
+				source = engine,
+				scriptCode = "",
+				rawUrl = item.rawScript or "",
+				isUrl = true,
+				_raw = item,
+				gameId = item.game and item.game.placeId,
+				gameName = item.game and item.game.title -- Mengambil Nama Game
+			})
+		elseif engine == "RobloxScripts" then
+			table.insert(normalized, {
+				title = item.title or "No Title",
+				author = item.author and item.author.username or "Anon", -- Diperbaiki ke item.author
+				description = item.description or "",
+				views = item.views or 0,
+				likes = item.likes or 0,
+				source = engine,
+				scriptCode = item.script or "",
+				rawUrl = item.rawScriptUrl or "",
+				isUrl = true,
+				_raw = item,
+				gameId = item.game and item.game.placeId,
+				gameName = item.game and item.game.name
+			})
 		elseif engine == "HaxHell" then
-			table.insert(normalized, { title = item.title or "No Title", author = item.author and item.author.username or "Anon", description = item.description or "", views = item.stats and item.stats.views or 0, likes = item.stats and item.stats.likes or 0, source = engine, scriptCode = "", rawUrl = item.links and item.links.raw or "", isUrl = true, _raw = item, gameId = item.game and item.game.placeId })
+			table.insert(normalized, {
+				title = item.title or "No Title",
+				author = item.author and item.author.username or "Anon",
+				description = item.description or "",
+				views = item.stats and item.stats.views or 0,
+				likes = item.stats and item.stats.likes or 0,
+				source = engine,
+				scriptCode = "",
+				rawUrl = item.links and item.links.raw or "",
+				isUrl = true,
+				_raw = item,
+				gameId = item.game and item.game.placeId,
+				gameName = item.game and item.game.name
+			})
 		else
-			local directCode = item.script or item.code or "" local rawUrl = item.rawScriptUrl or item.scriptLink or item.raw or ""
-			local isUrl = rawUrl ~= "" and directCode == "" if not isUrl then rawUrl = "" end
-			table.insert(normalized, { title = item.title or "No Title", author = item.creator and item.creator.username or item.owner or "Anon", description = item.description or "", views = item.views or 0, likes = item.likes or item.likeCount or 0, source = engine, scriptCode = directCode, rawUrl = rawUrl, isUrl = isUrl, _raw = item, gameId = item.gameId or (item.game and item.game.gameId) or item.placeId or (item.game and item.game.placeId) })
+			local directCode = item.script or ""
+			local rawUrl = item.rawScriptUrl or item.scriptLink or item.raw or ""
+			local isUrl = rawUrl ~= "" and directCode == ""
+			table.insert(normalized, {
+				title = item.title or "No Title",
+				author = (item.owner and item.owner.username) or (item.creator and item.creator.username) or "Anon",
+				description = item.description or "",
+				views = item.views or 0,
+				likes = item.likes or item.likeCount or 0,
+				source = engine,
+				scriptCode = directCode,
+				rawUrl = rawUrl,
+				isUrl = isUrl,
+				_raw = item,
+				gameId = item.game and (item.game.gameId or item.game.placeId),
+				gameName = item.game and item.game.name
+			})
 		end
 	end
 	return normalized, totalPages
+end
+
+function AdvancedHub:FetchDetails(engine, scriptData)
+	-- Kalau kode udah ada dan gak butuh URL, langsung return
+	if not scriptData.isUrl and scriptData.scriptCode ~= "" and scriptData.description ~= "" then return scriptData end
+
+	local url = ""
+	local slug = scriptData._raw.slug or scriptData._raw.id
+
+	if engine == "RScripts" then url = "https://rscripts.net/api/v1/scripts/" .. slug
+	elseif engine == "ScriptBlox" then url = "https://scriptblox.com/api/script/" .. slug
+	elseif engine == "HaxHell" then url = "https://haxhell.com/api/v1/scripts/" .. slug
+	elseif engine == "RobloxScripts" then
+		-- RobloxScripts gak punya endpoint detail yang jelas, kita ambil raw scriptnya aja
+		if scriptData.rawUrl ~= "" then
+			local ok, body = Ether.universalHttpGet(scriptData.rawUrl)
+			if ok and body ~= "" then
+				scriptData.scriptCode = body
+				scriptData.isUrl = false
+			end
+		end
+		return scriptData
+	end
+
+	if url ~= "" then
+		local ok, body = Ether.universalHttpGet(url)
+		if ok and body ~= "" then
+			local ok2, dec = pcall(HttpService.JSONDecode, HttpService, body)
+			if ok2 and dec then
+				if engine == "RScripts" then
+					local d = dec.data
+					if d then
+						scriptData.scriptCode = d.script or d.rawScript or ""
+						scriptData.description = d.description or scriptData.description
+						scriptData.isUrl = false
+					end
+				elseif engine == "ScriptBlox" then
+					local d = dec.script
+					if d then
+						scriptData.scriptCode = d.script or ""
+						scriptData.description = d.description or scriptData.description
+						scriptData.isUrl = false
+					end
+				elseif engine == "HaxHell" then
+					local d = dec.data
+					if d then
+						scriptData.scriptCode = d.source and d.source.code or ""
+						scriptData.description = d.description or scriptData.description
+						scriptData.isUrl = false
+					end
+				end
+			end
+		end
+	end
+	return scriptData
 end
 
 function AdvancedHub:SaveAsFile(data, extension)

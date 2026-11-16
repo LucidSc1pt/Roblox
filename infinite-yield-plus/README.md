@@ -53,6 +53,8 @@ InfiniteYieldPlus/
     └── InfiniteYieldPlus.lua   → single-file build for use with loadstring
 ```
 
+Vibecoded project with DeepSeek.
+
 # License
 Open Source.
 Free to use and modify whatever you want.

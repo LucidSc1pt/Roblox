@@ -57,8 +57,8 @@ local Credits = Ether.Create("TextLabel", { Name="Credits", Parent=InfoTab.conta
 local Credits_Text = Credits:Clone() Credits_Text.Name="Credits_Text" Credits_Text.Parent=InfoTab.containerInstance Credits_Text.Size=UDim2.new(1,-10,0.3,0) Credits_Text.Font=Enum.Font.GothamSemibold Credits_Text.Text="This script was made by LucidSc1pt" Credits_Text.TextSize=18
 
 local combinedText = "📜 All Versions:\n\n[v0.0.1 beta]\n• Release!\n\n"
-local Changelog = Credits:Clone() Changelog.Name="Changelog" Changelog.Parent=InfoTab.containerInstance Changelog.Size=UDim2.new(0.25,0,0,30) Changelog.Text="📜 Changelog:"
 local Changelog_Text_Holder = Ether.Create("ScrollingFrame", { Name="Changelog_Text_Holder", Parent=InfoTab.containerInstance, BackgroundColor3=Color3.fromRGB(25,25,25), Size=UDim2.new(1,0,0.6,0), CanvasSize=UDim2.new(0,0,0,0), ScrollBarThickness=1, AutomaticCanvasSize=Enum.AutomaticSize.Y, ScrollingDirection=Enum.ScrollingDirection.Y })
+local Changelog = Credits:Clone() Changelog.Name="Changelog" Changelog.Parent=Changelog_Text_Holder Changelog.Size=UDim2.new(0.25,0,0,30) Changelog.Text="📜 Changelog:"
 Ether.Create("TextLabel", { Name="Changelog_Text", Parent=Changelog_Text_Holder, BackgroundTransparency=1, Size=UDim2.new(0,0,0,0), Font=Enum.Font.GothamSemibold, Text=combinedText, TextXAlignment=Enum.TextXAlignment.Left, TextSize=18, AutomaticSize=Enum.AutomaticSize.Y, TextWrapped=false })
 
 return Ether

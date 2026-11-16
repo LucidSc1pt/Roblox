@@ -62,7 +62,7 @@ function Builder.create()
     refreshBtn.Position = UDim2.fromOffset(0, 0)
     refreshBtn.BackgroundTransparency = 1
     refreshBtn.Font = Theme.FontBold
-    refreshBtn.Text = "⟳"
+    refreshBtn.Text = "r"
     refreshBtn.TextColor3 = Theme.Colors.TextDim
     refreshBtn.TextSize = 16
     refreshBtn.Parent = btnArea
@@ -72,7 +72,7 @@ function Builder.create()
     closeBtn.Position = UDim2.fromOffset(30, 0)
     closeBtn.BackgroundTransparency = 1
     closeBtn.Font = Theme.FontBold
-    closeBtn.Text = "✕"
+    closeBtn.Text = "×"
     closeBtn.TextColor3 = Theme.Colors.Danger
     closeBtn.TextSize = 16
     closeBtn.Parent = btnArea

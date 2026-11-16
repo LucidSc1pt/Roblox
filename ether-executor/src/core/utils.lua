@@ -93,7 +93,24 @@ function Ether.downloadImageAsset(url)
 end
 
 function Ether.resolveScriptBloxImage(data) if not data then return nil end local function pick(values) for _,value in ipairs(values) do local normalized=normalizeImageUrl(value, "https://scriptblox.com") if normalized and isMeaningfulImageUrl(normalized) then return normalized end end end local fromScript=pick({data.image, data.imageUrl, data.thumbnail, data.coverImage, data.icon}) if fromScript then return fromScript end local game=data.game or {} local fromGame=pick({game.imageUrl, game.thumbnail, game.image, game.coverImage, game.icon}) if fromGame then return fromGame end return nil end
-function Ether.resolveRScriptsImage(data) if not data then return nil end local candidates={data.image, data.imageUrl, data.thumbnail, data.cover, data.banner, data.img} for _,value in ipairs(candidates) do local normalized=normalizeImageUrl(value, "https://rscripts.net") if normalized then return normalized end end local game=data.game if game then local gameFields={game.imgurl, game.imageUrl, game.image, game.thumbnail, game.cover, game.banner, game.gameLogo} for _,value in ipairs(gameFields) do local normalized=normalizeImageUrl(value, "https://rscripts.net") if normalized then return normalized end end end return nil end
+function Ether.resolveRScriptsImage(data)
+	if not data then return nil end
+	local candidates = { data.image, data.imageUrl, data.thumbnail, data.cover, data.banner, data.img }
+	for _, value in ipairs(candidates) do
+		local normalized = normalizeImageUrl(value, "https://rscripts.net")
+		if normalized then return normalized end
+	end
+	local game = data.game
+	if game then
+		-- Menambahkan thumbnailUrl & logoUrl dari API V1
+		local gameFields = { game.thumbnailUrl, game.logoUrl, game.imgurl, game.imageUrl, game.image, game.thumbnail, game.cover, game.banner, game.gameLogo }
+		for _, value in ipairs(gameFields) do
+			local normalized = normalizeImageUrl(value, "https://rscripts.net")
+			if normalized then return normalized end
+		end
+	end
+	return nil
+end
 function Ether.resolveRobloxScriptsImage(data) if not data then return nil end local candidates={data.image, data.imageUrl, data.thumbnail, data.game and data.game.iconUrl, data.game and data.game.image} for _,value in ipairs(candidates) do local normalized=normalizeImageUrl(value, "https://robloxscripts.com") if normalized and isMeaningfulImageUrl(normalized) then return normalized end end return nil end
 function Ether.resolveHaxHellImage(data)
 	if not data then return nil end

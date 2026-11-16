@@ -41,6 +41,8 @@ loadstring(game:HttpGet(
          └── toggle.lua (Floating Toggle Button)
  ```
 
+Vibecoded project with DeepSeek.
+
 # License
 Open Source.
 Free to use and modify whatever you want.

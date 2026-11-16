@@ -30,20 +30,52 @@ function Builder.create()
     stroke.Thickness = 1
     stroke.Parent = panel
 
+    -- Title Area
+    local titleArea = Instance.new("Frame")
+    titleArea.Size = UDim2.new(1, 0, 0, 34)
+    titleArea.BackgroundColor3 = Theme.Colors.Surface
+    titleArea.BorderSizePixel = 0
+    titleArea.Parent = panel
+
+    local titleCorner = Instance.new("UICorner")
+    titleCorner.CornerRadius = Theme.CornerRadius
+    titleCorner.Parent = titleArea
+
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 34)
-    title.BackgroundColor3 = Theme.Colors.Surface
-    title.BorderSizePixel = 0
+    title.Size = UDim2.new(1, -60, 1, 0)
+    title.BackgroundTransparency = 1
     title.Font = Theme.FontBold
     title.Text = " ∞ Infinite Yield+ "
     title.TextColor3 = Theme.Colors.Accent
     title.TextSize = 13
     title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = panel
+    title.Parent = titleArea
 
-    local titleCorner = Instance.new("UICorner")
-    titleCorner.CornerRadius = Theme.CornerRadius
-    titleCorner.Parent = title
+    local btnArea = Instance.new("Frame")
+    btnArea.Size = UDim2.fromOffset(60, 34)
+    btnArea.Position = UDim2.new(1, -60, 0, 0)
+    btnArea.BackgroundTransparency = 1
+    btnArea.Parent = titleArea
+
+    local refreshBtn = Instance.new("TextButton")
+    refreshBtn.Size = UDim2.fromOffset(30, 34)
+    refreshBtn.Position = UDim2.fromOffset(0, 0)
+    refreshBtn.BackgroundTransparency = 1
+    refreshBtn.Font = Theme.FontBold
+    refreshBtn.Text = "⟳"
+    refreshBtn.TextColor3 = Theme.Colors.TextDim
+    refreshBtn.TextSize = 16
+    refreshBtn.Parent = btnArea
+
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.fromOffset(30, 34)
+    closeBtn.Position = UDim2.fromOffset(30, 0)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.Font = Theme.FontBold
+    closeBtn.Text = "✕"
+    closeBtn.TextColor3 = Theme.Colors.Danger
+    closeBtn.TextSize = 16
+    closeBtn.Parent = btnArea
 
     local search = Instance.new("TextBox")
     search.Name = "Search"
@@ -88,22 +120,20 @@ function Builder.create()
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = list
 
-    -- Draggable
+    -- Draggable Logic
     local dragging, dragStart, startPos = false, Vector2.zero, UDim2.new()
-    title.InputBegan:Connect(function(input)
+    titleArea.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
             or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = panel.Position
             input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
             end)
         end
     end)
-    title.InputChanged:Connect(function(input)
+    titleArea.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
             or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStart
@@ -120,7 +150,8 @@ function Builder.create()
         Search     = search,
         TabBarSlot = tabSlot,
         List       = list,
-        Title      = title,
+        RefreshBtn = refreshBtn,
+        CloseBtn   = closeBtn,
     }
 end
 

@@ -11,7 +11,7 @@ highlighter.COLORS = {
 	Executor = Color3.fromRGB(255, 119, 183), Types = Color3.fromRGB(97, 161, 241),
 	Strings = Color3.fromRGB(173, 241, 149), Comments = Color3.fromRGB(102, 102, 102),
 	Properties = Color3.fromRGB(129, 222, 255), Methods = Color3.fromRGB(227, 201, 141),
-	Default = Color3.fromRGB(235, 235, 235),
+	Default = Color3.fromRGB(255, 255, 255),
 }
 local COLORS = highlighter.COLORS
 
@@ -69,7 +69,7 @@ function highlighter.attach(textBox, options)
 	assert(textBox and textBox:IsA("TextBox")) options = options or {}
 	local hideOnFocus = options.hideOnFocus == nil and true or options.hideOnFocus
 	local updateOnFocusLostOnly = options.updateOnFocusLostOnly == nil and true or options.updateOnFocusLostOnly
-	local debounceTime = options.debounce or 0.15 local useThread = options.useThread == nil and true or options.useThread
+	local debounceTime = options.debounce or 0.1 local useThread = options.useThread == nil and true or options.useThread
 	local layers = {}
 	for _, name in ipairs({ "Numbers","Operators","Keywords","Globals","Executor","Types","Strings","Comments","Properties","Methods" }) do
 		local lbl = Instance.new("TextLabel")

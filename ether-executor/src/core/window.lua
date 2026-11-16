@@ -18,7 +18,7 @@ local UIWindow = Ether.Create("Frame", {
 local MainFrameParent = Ether.Create("Frame", {
 	Name = tostring(Ether.createUIName()), Parent = Ether.EtherExecutor,
 	BackgroundTransparency = 1, BorderColor3 = Color3.fromRGB(0, 151, 230),
-	Position = UDim2.new(0, 50, 0, 50), Size = UDim2.new(0, 530, 0, 300), ClipsDescendants = true
+	Position = UDim2.new(0, 50, 0, 50), Size = UDim2.new(0, 570, 0, 320), ClipsDescendants = true
 })
 Ether.MainFrameParent = MainFrameParent
 

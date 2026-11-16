@@ -1,13 +1,23 @@
-I'm really bored, and I've got an idea to try building an internal script executor.  It's just for fun.  This script is an "AI vibecode" project with DeepSeek.
+# Ether Internal Executor
 
-# Load Script
+This is **not** an real executor, because it depends on your executor performance.
+
+## Load Script
 ```luau
 loadstring(game:HttpGet(
   "https://raw.githubusercontent.com/LucidSc1pt/Roblox/main/ether-executor/loader.lua"
 ))()
 ```
 
- # FOLDER STRUCTURE
+## Features
+- Script Search: Search script to API provider like [ScriptBlox](https://scriptblox.com), [HaxHell](https://haxhell.com), [Roblox Scripts](https://robloxscripts.com), and [RS Script](https://rscripts.net). Will add more provider soon.
+- Code Editor: You can write code in here and execute it, has tabs editor, works well for mobile.
+- Script Hub: You can add your script to save it locally on your executor workspace.
+- Save the script source in your local executor workspace.
+
+> Important: Your executor must have **writefile and readfile** function or the saving function will not work.
+
+ ## Folder Structure
  ```
  ether-executor/
  ├── loader.lua
@@ -30,7 +40,6 @@ loadstring(game:HttpGet(
          ├── clock.lua (Header Clock)
          └── toggle.lua (Floating Toggle Button)
  ```
-
 
 # License
 Open Source.

@@ -36,7 +36,7 @@ local NextBtn = makePagBtn("Next", 195)
 local LastBtn = makePagBtn("Last", 250)
 
 local ResultHolder = Ether.Create("ScrollingFrame", { Size = UDim2.new(1, 0, 1, -70), Position = UDim2.new(0, 0, 0, 35), BackgroundTransparency = 1, AutomaticCanvasSize = Enum.AutomaticSize.Y, ScrollBarThickness = 2, Parent = SearchContent })
-Ether.Create("UIGridLayout", { CellSize = UDim2.new(0, 170, 0, 160), CellPadding = UDim2.new(0, 8, 0, 8), Parent = ResultHolder })
+Ether.Create("UIGridLayout", { CellSize = UDim2.new(0, 120, 0, 160), CellPadding = UDim2.new(0, 8, 0, 8), Parent = ResultHolder })
 
 local function setNavEnabled()
 	local has = hub.pagination.hasResults
@@ -50,7 +50,7 @@ end
 local function createReadOnlyPopup(data)
 	-- Ukuran popup dikecilkan dari 600x460 menjadi 520x400
 	local overlay = Ether.Create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0.4, ZIndex = 100, Parent = EtherExecutor })
-	local popup = Ether.Create("Frame", { Size = UDim2.new(0, 520, 0, 400), Position = UDim2.new(0.5, -260, 0.5, -200), BackgroundColor3 = Color3.fromRGB(20, 20, 25), ZIndex = 101, Parent = overlay })
+	local popup = Ether.Create("Frame", { Size = UDim2.new(0, 520, 0, 360), Position = UDim2.new(0.5, -260, 0.5, -200), BackgroundColor3 = Color3.fromRGB(20, 20, 25), ZIndex = 101, Parent = overlay })
 	Ether.Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = popup })
 	Ether.Create("UIStroke", { Color = Color3.fromRGB(60, 60, 70), Thickness = 1, Parent = popup })
 

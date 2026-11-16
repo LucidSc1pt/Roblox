@@ -15,7 +15,7 @@ Ether.Create("UICorner", { CornerRadius=UDim.new(0,6), Parent=AddTabBtn })
 local RenameTabBtn = Ether.Create("TextButton", { Name="RenameTabBtn", Parent=CodeTab.containerInstance, Position=UDim2.new(1,-65,0,5), Size=UDim2.new(0,60,0,32), BackgroundColor3=Color3.fromRGB(80,80,90), Text="Rename", TextColor3=Color3.fromRGB(255,255,255), Font=Enum.Font.GothamBold, TextSize=11, AutoButtonColor=false, ZIndex=5 })
 Ether.Create("UICorner", { CornerRadius=UDim.new(0,6), Parent=RenameTabBtn })
 
-local EditorFrameParent = Ether.Create("Frame", { Name="EditorFrameParent", Parent=CodeTab.containerInstance, BackgroundTransparency=1, Position=UDim2.new(0,5,0,42), Size=UDim2.new(1,-10,1,-130), ClipsDescendants=true })
+local EditorFrameParent = Ether.Create("Frame", { Name="EditorFrameParent", Parent=CodeTab.containerInstance, BackgroundTransparency=1, Position=UDim2.new(0,5,0,42), Size=UDim2.new(1,-10,1,-100), ClipsDescendants=true })
 Ether.Create("UIListLayout", { FillDirection=Enum.FillDirection.Horizontal, SortOrder=Enum.SortOrder.LayoutOrder, Parent=EditorFrameParent })
 
 local lineTextFrameParent = Ether.Create("Frame", { Name="lineTextFrameParent", Parent=EditorFrameParent, BackgroundTransparency=1, AutomaticSize=Enum.AutomaticSize.X, Size=UDim2.new(0,0,1,0) })
@@ -23,7 +23,7 @@ local lineText = Instance.new("TextLabel", lineTextFrameParent)
 lineText.Size=UDim2.new(0,20,1,0) lineText.BackgroundColor3=Color3.fromRGB(20,20,20) lineText.Font=Enum.Font.Code lineText.AutomaticSize=Enum.AutomaticSize.X
 lineText.TextSize=12 lineText.TextXAlignment=Enum.TextXAlignment.Right lineText.TextYAlignment=Enum.TextYAlignment.Top lineText.TextColor3=Color3.fromRGB(100,100,100) lineText.Text="1"
 
-local EditorHolder = Ether.Create("ScrollingFrame", { Name="EditorHolder", Parent=EditorFrameParent, BackgroundColor3=Color3.fromRGB(25,25,25), Position=UDim2.new(0,5,0,5), Size=UDim2.new(1,lineText.AbsoluteSize.X,1,0), CanvasSize=UDim2.new(0,0,0,0), ScrollBarThickness=1, AutomaticCanvasSize=Enum.AutomaticSize.XY, ScrollingDirection=Enum.ScrollingDirection.XY })
+local EditorHolder = Ether.Create("ScrollingFrame", { Name="EditorHolder", Parent=EditorFrameParent, BackgroundColor3=Color3.fromRGB(25,25,25), Position=UDim2.new(0,5,0,5), Size=UDim2.new(1,-lineText.AbsoluteSize.X,1,0), CanvasSize=UDim2.new(0,0,0,0), ScrollBarThickness=1, AutomaticCanvasSize=Enum.AutomaticSize.XY, ScrollingDirection=Enum.ScrollingDirection.XY })
 
 local TextBox1 = Ether.Create("TextBox", { Name="Editor_Script", Parent=EditorHolder, BackgroundTransparency=1, Size=UDim2.new(1,0,1,0), Font=Enum.Font.Code, TextColor3=Color3.fromRGB(255,255,255), Text="", PlaceholderText="Paste/Write your script here!", TextWrapped=false, TextSize=12, MultiLine=true, ClearTextOnFocus=false, TextXAlignment=Enum.TextXAlignment.Left, TextYAlignment=Enum.TextYAlignment.Top })
 Ether.currentTextBox = TextBox1
@@ -33,8 +33,8 @@ local function autoSizeEditor(target, line, scroll)
 	local lines = select(2, text:gsub("\n", "")) + 1 local list = {}
 	for i = 1, lines do list[#list+1] = tostring(i) end
 	line.Text = table.concat(list, "\n")
-	target.Size = UDim2.new(0, math.max(textBounds.X, frameSize.X) - line.AbsoluteSize.X, 0, math.max(textBounds.Y, frameSize.Y))
 	line.Size = UDim2.new(0, line.AbsoluteSize.X, 0, math.max(textBounds.Y, frameSize.Y))
+	target.Size = UDim2.new(0, math.max(textBounds.X, frameSize.X), 0, math.max(textBounds.Y, frameSize.Y))
 end
 
 local tabEditor = Ether.TabReuse.new(EditorTabBar, TextBox1, highlighter, function(tabData)

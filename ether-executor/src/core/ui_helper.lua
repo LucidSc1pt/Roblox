@@ -40,7 +40,7 @@ function Ether.protect_gui(obj)
     end
     pcall(function()
         obj.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-        obj.DisplayOrder = 999999
+        obj.DisplayOrder = 1
         obj.ResetOnSpawn = false
     end)
     return s

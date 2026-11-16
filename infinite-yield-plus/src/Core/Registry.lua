@@ -1,5 +1,9 @@
-local manualCommands = require(script.Parent.Parent.Data.commands)
+local baseCommands = require(script.Parent.Parent.Data.commands)
+local PluginManager = require(script.Parent.PluginManager)
+
 local Registry = {}
+Registry._all = {}
+Registry._byName = {}
 local lowerCache = {}
 
 local categoryRules = {
@@ -25,64 +29,117 @@ local function categorize(name, desc)
     return "Misc"
 end
 
-local function rebuildCache()
+local function parseCMDName(raw)
+    local stripped = raw:gsub("%s*%[[^%]]*%]", "")
+    local parts = {}
+    for part in stripped:gmatch("([^/]+)") do
+        part = part:gsub("^%s+", ""):gsub("%s+$", "")
+        if part ~= "" then table.insert(parts, part) end
+    end
+    if #parts == 0 then return nil end
+    return parts[1], parts
+end
+
+-- Parser Argumen (sama seperti sebelumnya)
+local NUMBER_KEYWORDS = {"num","number","delay","distance","radius","brightness","size","transparency","speed","amount","seconds"}
+local STRING_KEYWORDS = {"url","text","statetype","emote","key","type","cmd","alias"}
+local function matchKeyword(lower, kw)
+    if lower == kw then return true end
+    if lower:match("^" .. kw .. "%s") then return true end
+    if lower:match("%s" .. kw .. "$") then return true end
+    return false
+end
+local function parseArgGroup(raw)
+    local group = raw:match("^%s*(.-)%s*$")
+    if group == "" then return nil end
+    local lower = group:lower()
+    local upper = group:gsub("%s", "")
+    if upper:match("^[XYZ]+$") and #upper == 3 then
+        return {{type="number", key="X", placeholder="0", default=""}, {type="number", key="Y", placeholder="0", default=""}, {type="number", key="Z", placeholder="0", default=""}}
+    end
+    if lower:match("^%d+%s*%-%s*%d+$") then return {{type="number", key="value", placeholder=group, default=""}} end
+    if lower:match("^%d+$") then return {{type="number", key="value", placeholder=group, default=group}} end
+    if lower == "true" or lower == "false" or lower:match("^true%s*/%s*false$") then return {{type="bool", key="toggle", placeholder="true / false", default=""}} end
+    if lower:match("player") then return {{type="player", key="player", placeholder="all", default="all"}} end
+    if lower == "id" or lower:match("%sid$") or lower:match("^id%s") then return {{type="id", key="ID", placeholder=group, default=""}} end
+    for _, kw in ipairs(NUMBER_KEYWORDS) do
+        if matchKeyword(lower, kw) then return {{type="number", key=kw, placeholder=group, default=""}} end
+    end
+    for _, kw in ipairs(STRING_KEYWORDS) do
+        if matchKeyword(lower, kw) then return {{type="string", key=kw, placeholder=group, default=""}} end
+    end
+    if lower:match("name") then return {{type="string", key="name", placeholder=group, default=""}} end
+    return {{type="string", key=group, placeholder=group, default=""}}
+end
+local function parseArgsFromTitle(title)
+    local args = {}
+    for group in title:gmatch("%[([^%]]+)%]") do
+        local parsed = parseArgGroup(group)
+        if parsed then
+            for _, a in ipairs(parsed) do table.insert(args, a) end
+        end
+    end
+    return args
+end
+
+function Registry.rebuild()
+    Registry._all = {}
+    Registry._byName = {}
     lowerCache = {}
+    local order = 0
+
+    -- 1. Masukkan Command Bawaan IY
+    for _, cmd in ipairs(baseCommands) do
+        if cmd.NAME and cmd.NAME ~= "" then
+            local primary, parts = parseCMDName(cmd.NAME)
+            if primary then
+                order = order + 1
+                local aliases = {}
+                for i = 2, #parts do table.insert(aliases, parts[i]) end
+                
+                local entry = {
+                    name = primary,
+                    fullName = cmd.NAME,
+                    aliases = aliases,
+                    desc = cmd.DESC or "",
+                    cat = categorize(primary, cmd.DESC),
+                    args = parseArgsFromTitle(cmd.NAME),
+                    order = order
+                }
+                table.insert(Registry._all, entry)
+                Registry._byName[primary] = entry
+            end
+        end
+    end
+
+    -- 2. Masukkan Command dari Plugin yang aktif
+    local activePlugins = PluginManager.getAllLoadedPlugins()
+    for _, p in ipairs(activePlugins) do
+        for cmdName, cmdData in pairs(p.data.Commands or {}) do
+            order = order + 1
+            local entry = {
+                name = cmdName,
+                fullName = cmdData.ListName or cmdName,
+                aliases = cmdData.Aliases or {},
+                desc = cmdData.Description or "",
+                cat = "Plugin",
+                args = parseArgsFromTitle(cmdData.ListName or cmdName),
+                order = order,
+                func = cmdData.Function, -- Fungsi eksekusi plugin
+                pluginPath = p.path
+            }
+            table.insert(Registry._all, entry)
+            Registry._byName[cmdName] = entry
+        end
+    end
+
     for i, c in ipairs(Registry._all) do
         lowerCache[i] = c.name:lower()
     end
 end
 
-Registry._all = manualCommands
-rebuildCache()
-
-function Registry.setAutoCommands(autoList)
-    local manualByName = {}
-    for _, m in ipairs(manualCommands) do
-        manualByName[m.name] = m
-    end
-
-    local merged, seen = {}, {}
-    for i, auto in ipairs(autoList) do
-        if not seen[auto.name] then
-            seen[auto.name] = true
-            local manual = manualByName[auto.name]
-            if manual then
-                local m = {}
-                for k, v in pairs(manual) do m[k] = v end
-                m.fullName = auto.fullName or m.fullName or m.name
-                m.aliases = auto.aliases or m.aliases
-                if not m.args and auto.args and #auto.args > 0 then m.args = auto.args end
-                m.order = i
-                table.insert(merged, m)
-            else
-                table.insert(merged, {
-                    name = auto.name,
-                    fullName = auto.fullName,
-                    aliases = auto.aliases,
-                    desc = auto.desc,
-                    cat = categorize(auto.name, auto.desc),
-                    args = auto.args,
-                    order = i,
-                })
-            end
-        end
-    end
-
-    for _, m in ipairs(manualCommands) do
-        if not seen[m.name] then
-            seen[m.name] = true
-            local mm = {}
-            for k, v in pairs(m) do mm[k] = v end
-            mm.order = #merged + 1
-            table.insert(merged, mm)
-        end
-    end
-
-    Registry._all = merged
-    rebuildCache()
-end
-
 function Registry.all() return Registry._all end
+function Registry.get(name) return Registry._byName[name] end
 
 function Registry.filter(query, category)
     query = (query or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
@@ -94,9 +151,7 @@ function Registry.filter(query, category)
                 out[#out+1] = cmd
             else
                 local hit = lowerCache[i]:find(query, 1, true) ~= nil
-                if not hit and cmd.desc then
-                    hit = cmd.desc:lower():find(query, 1, true) ~= nil
-                end
+                if not hit and cmd.desc then hit = cmd.desc:lower():find(query, 1, true) ~= nil end
                 if not hit and cmd.aliases then
                     for _, a in ipairs(cmd.aliases) do
                         if a:lower():find(query, 1, true) then hit = true break end
@@ -118,13 +173,6 @@ function Registry.categories()
         end
     end
     return out
-end
-
-function Registry.get(name)
-    for _, cmd in ipairs(Registry._all) do
-        if cmd.name == name then return cmd end
-    end
-    return nil
 end
 
 return Registry

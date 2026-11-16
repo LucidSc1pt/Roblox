@@ -10,12 +10,14 @@ local MODULES = {
     "Core.IYBridge",
     "Core.Registry",
     "Core.Saved",
+    "Core.PluginManager", -- BARU
     "Data.commands",
     "UI.Theme",
     "UI.Layout",
     "UI.Builder",
     "UI.CommandRow",
     "UI.TabBar",
+    "UI.PluginUI",        -- BARU
 }
 
 local HEADER = [==[

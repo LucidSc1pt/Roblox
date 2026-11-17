@@ -101,7 +101,6 @@ buildList = function()
             local row = createRow(ui.List, entry, runCommand, onSavedChanged)
             local parts = { entry.name }
             if entry.fullName then table.insert(parts, entry.fullName) end
-            if entry.desc then table.insert(parts, entry.desc) end
             if entry.aliases then
                 for _, a in ipairs(entry.aliases) do table.insert(parts, a) end
             end

@@ -151,12 +151,19 @@ function Registry.filter(query, category)
                 out[#out+1] = cmd
             else
                 local hit = lowerCache[i]:find(query, 1, true) ~= nil
-                if not hit and cmd.desc then hit = cmd.desc:lower():find(query, 1, true) ~= nil end
+                
+                -- Cek Aliases (termasuk yang dipisah garis miring)
                 if not hit and cmd.aliases then
                     for _, a in ipairs(cmd.aliases) do
                         if a:lower():find(query, 1, true) then hit = true break end
                     end
                 end
+                
+                -- Cek FullName (Title asli dari IY)
+                if not hit and cmd.fullName then
+                    hit = cmd.fullName:lower():find(query, 1, true) ~= nil
+                end
+                
                 if hit then out[#out+1] = cmd end
             end
         end

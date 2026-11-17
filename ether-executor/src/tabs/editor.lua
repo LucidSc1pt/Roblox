@@ -56,13 +56,17 @@ EditorHolder:GetPropertyChangedSignal("CanvasPosition"):Connect(function() lineT
 Ether.SafeConnect(AddTabBtn.MouseButton1Click, function() tabEditor:AddTab("Tab " .. tabEditor.nextId, "") end)
 
 -- RENAME POPUP
-local function createRenamePopup(currentTitle, onConfirm)
+-- RENAME POPUP (Bisa dipakai buat Rename atau Save As)
+local function createRenamePopup(currentTitle, popupTitle, onConfirm)
 	local overlay = Ether.Create("Frame", { Size=UDim2.new(1,0,1,0), BackgroundColor3=Color3.fromRGB(0,0,0), BackgroundTransparency=0.5, ZIndex=150, Parent=Ether.EtherExecutor })
 	local popup = Ether.Create("Frame", { Size=UDim2.new(0,320,0,140), Position=UDim2.new(0.5,-160,0.5,-70), BackgroundColor3=Color3.fromRGB(35,35,42), ZIndex=151, Parent=overlay })
 	Ether.Create("UICorner", { CornerRadius=UDim.new(0,10), Parent=popup })
-	Ether.Create("TextLabel", { Size=UDim2.new(1,-20,0,25), Position=UDim2.new(0,10,0,10), BackgroundTransparency=1, Text="Rename Tab", Font=Enum.Font.GothamBold, TextSize=14, TextColor3=Color3.fromRGB(255,255,255), TextXAlignment=Enum.TextXAlignment.Left, ZIndex=152, Parent=popup })
-	local input = Ether.Create("TextBox", { Size=UDim2.new(1,-20,0,35), Position=UDim2.new(0,10,0,40), BackgroundColor3=Color3.fromRGB(25,25,30), Text=currentTitle or "", PlaceholderText="New tab name...", Font=Enum.Font.Gotham, TextSize=12, TextColor3=Color3.fromRGB(255,255,255), ZIndex=152, Parent=popup })
+	
+	Ether.Create("TextLabel", { Size=UDim2.new(1,-20,0,25), Position=UDim2.new(0,10,0,10), BackgroundTransparency=1, Text=popupTitle or "Rename Tab", Font=Enum.Font.GothamBold, TextSize=14, TextColor3=Color3.fromRGB(255,255,255), TextXAlignment=Enum.TextXAlignment.Left, ZIndex=152, Parent=popup })
+	
+	local input = Ether.Create("TextBox", { Size=UDim2.new(1,-20,0,35), Position=UDim2.new(0,10,0,40), BackgroundColor3=Color3.fromRGB(25,25,30), Text=currentTitle or "", PlaceholderText="Script name...", Font=Enum.Font.Gotham, TextSize=12, TextColor3=Color3.fromRGB(255,255,255), ZIndex=152, Parent=popup })
 	Ether.Create("UICorner", { CornerRadius=UDim.new(0,6), Parent=input })
+	
 	local saveBtn = Ether.Create("TextButton", { Size=UDim2.new(0,80,0,30), Position=UDim2.new(1,-170,1,-40), BackgroundColor3=Color3.fromRGB(40,148,215), Text="Save", TextColor3=Color3.fromRGB(255,255,255), Font=Enum.Font.GothamBold, TextSize=12, AutoButtonColor=false, ZIndex=152, Parent=popup })
 	local cancelBtn = Ether.Create("TextButton", { Size=UDim2.new(0,80,0,30), Position=UDim2.new(1,-85,1,-40), BackgroundColor3=Color3.fromRGB(60,60,70), Text="Cancel", TextColor3=Color3.fromRGB(255,255,255), Font=Enum.Font.GothamBold, TextSize=12, AutoButtonColor=false, ZIndex=152, Parent=popup })
 	Ether.Create("UICorner", { CornerRadius=UDim.new(0,6), Parent=saveBtn }) Ether.Create("UICorner", { CornerRadius=UDim.new(0,6), Parent=cancelBtn })
@@ -78,7 +82,7 @@ Ether.createRenamePopup = createRenamePopup
 Ether.SafeConnect(RenameTabBtn.MouseButton1Click, function()
 	local activeId = tabEditor:GetActiveId()
 	if not activeId then hub:Toast("No active tab", Ether.EtherExecutor) return end
-	createRenamePopup(tabEditor:GetActiveTitle(), function(newName)
+	createRenamePopup(tabEditor:GetActiveTitle(), "Rename Tab", function(newName)
 		if tabEditor:RenameTab(activeId, newName) then hub:Toast("Renamed to "..newName, Ether.EtherExecutor) else hub:Toast("Failed rename", Ether.EtherExecutor) end
 	end)
 end)
@@ -101,7 +105,8 @@ Ether.Create("UICorner", { CornerRadius=UDim.new(0,6), Parent=SaveToHubBtn })
 Ether.SafeConnect(SaveToHubBtn.MouseButton1Click, function()
 	local code = tabEditor:GetActiveCode()
 	if code == "" or code:gsub("%s", "") == "" then hub:Toast("Code empty!", Ether.EtherExecutor) return end
-	createRenamePopup(tabEditor:GetActiveTitle(), function(newName)
+	local title = tabEditor:GetActiveTitle()
+	createRenamePopup(title, "Save Script As...", function(newName)
 		local ok, path = hub:SaveAsFile({ title = newName, scriptCode = code, source = "Code Tab" }, "lua")
 		if ok then
 			hub:Toast("Saved to Hub: " .. newName .. ".lua", Ether.EtherExecutor)

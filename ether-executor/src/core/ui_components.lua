@@ -202,9 +202,18 @@ function AdvancedHub:SaveAsFile(data, extension)
 	extension = tostring(extension or "lua"):gsub("[^%w]", ""):lower() if extension == "" then extension = "lua" end
 	local safeName = (data.title or "script"):gsub("[^%w%s%-_]", ""):gsub("%s+", "_"):sub(1, 40) if safeName == "" then safeName = "script_" .. os.time() end
 	local filePath = Ether.MainFolder .. "/" .. Ether.SavedScriptHubFolder .. "/" .. safeName .. "." .. extension
+	
+	-- Bersihkan header lama jika ada sebelum disimpan ulang
+	local cleanCode = (data.scriptCode or ""):gsub("^%-%-%[%[ Saved from Ether Executor[%s%S]-%]%]%s*", "")
+	
 	local header = string.format("--[[ Saved from Ether Executor\n   Title: %s\n   Source: %s\n   SavedAt: %s\n   Format: .%s\n]]\n\n", data.title or "Untitled", data.source or "Unknown", os.date("%Y-%m-%d %H:%M:%S"), extension)
-	local fullCode = header .. (data.scriptCode or "")
-	if writefile then local ok, err = pcall(writefile, filePath, fullCode) if ok then return true, filePath else warn(err) return false end end return false
+	local fullCode = header .. cleanCode
+	
+	if writefile then 
+		local ok, err = pcall(writefile, filePath, fullCode) 
+		if ok then return true, filePath else warn(err) return false end 
+	end 
+	return false
 end
 
 function AdvancedHub:LoadSavedScripts()

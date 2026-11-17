@@ -50,22 +50,27 @@ local function refreshSavedList()
 		for _, b in ipairs({ loadBtn, execBtn, editBtn, delBtn }) do Ether.Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = b }) end
 
 		loadBtn.MouseButton1Click:Connect(function()
-			Ether.tabEditor:AddTab(data.title, data.code)
-			hub:Toast("Loaded " .. data.fileName, EtherExecutor)
-		end)
-		execBtn.MouseButton1Click:Connect(function()
-			local execCode = (data.code or ""):gsub("^%-%-%[%[.-%]%]%s*", "")
-			local fn, err = loadstring(execCode)
-			if not fn then hub:Toast("Compile error: " .. tostring(err):sub(1, 40), EtherExecutor) return end
-			local ok, err2 = pcall(fn)
-			if ok then hub:Toast("Executed " .. data.title, EtherExecutor)
-			else hub:Toast("Runtime error", EtherExecutor) warn(err2) end
-		end)
-		editBtn.MouseButton1Click:Connect(function()
-			Ether.tabEditor:AddTab((data.title or "Script") .. " [Edit]", data.code)
-			Ether.exeTabs.CodeTab:Select()
-			hub:Toast("Opened for edit", EtherExecutor)
-		end)
+	local cleanCode = (data.code or ""):gsub("^%-%-%[%[ Saved from Ether Executor[%s%S]-%]%]%s*", "")
+	Ether.tabEditor:AddTab(data.title, cleanCode)
+	hub:Toast("Loaded " .. data.fileName, EtherExecutor)
+end)
+
+execBtn.MouseButton1Click:Connect(function()
+	-- Exec tetap pakai kode asli (karena gsub otomatis abaikan header comment)
+	local execCode = (data.code or ""):gsub("^%-%-%[%[.-%]%]%s*", "")
+	local fn, err = loadstring(execCode)
+	if not fn then hub:Toast("Compile error: " .. tostring(err):sub(1, 40), EtherExecutor) return end
+	local ok, err2 = pcall(fn)
+	if ok then hub:Toast("Executed " .. data.title, EtherExecutor)
+	else hub:Toast("Runtime error", EtherExecutor) warn(err2) end
+end)
+
+editBtn.MouseButton1Click:Connect(function()
+	local cleanCode = (data.code or ""):gsub("^%-%-%[%[ Saved from Ether Executor[%s%S]-%]%]%s*", "")
+	Ether.tabEditor:AddTab((data.title or "Script") .. " [Edit]", cleanCode)
+	Ether.exeTabs.CodeTab:Select()
+	hub:Toast("Opened for edit", EtherExecutor)
+end)
 		delBtn.MouseButton1Click:Connect(function()
 			if delfile then pcall(delfile, data.filePath) end
 			refreshSavedList()
